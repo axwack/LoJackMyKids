@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Lo Jack My Kids</string>
+    <string name="action_settings">Settings</string>
+    <string name="set_action_locations">Set Known Locations</string>
+    <string name="title_activity_known_locations"></string>
+    <string name="hello_world">Hello world!</string>
+    <string name="str_btn_find">Find</string>
+    <string name="hnt_et_location">Search for a Known Location</string>
+    <string name="save_address">Save this Known Location?</string>
+    <string name="save">Save</string>
+    <string name="Cancel">Cancel</string>
+    <string name="delete_db">Delete Known Locations</string>
+    <string name="see_known_locations">See Your Known Locations</string>
+    <string name="known_list_activity_name">Saved Locations</string>
+    <string name="known_location">default_known_location</string>
+
+</resources>

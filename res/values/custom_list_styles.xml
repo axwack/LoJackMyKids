@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="MyListViewStyle">
+        <item name="android:textSize">14dp</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+    
+     <style name="subject">
+        <item name="android:textSize">12dp</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+    
+     <style name="ListBackground">
+        <item name="android:background">@drawable/list_background</item>
+    </style>
+    
+</resources>

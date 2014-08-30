@@ -1,0 +1,19 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.principalmvl.lojackmykids.KnownLocationsActivity" >
+
+    <item
+        android:id="@+id/delete_db_settings"
+        android:enabled="true"
+        android:orderInCategory="100"
+        android:title="@string/delete_db"
+        app:showAsAction="ifRoom"/>
+     <item
+        android:id="@+id/see_known_locations_menu"
+        android:enabled="true"
+        android:orderInCategory="100"
+        android:title="@string/see_known_locations"
+        app:showAsAction="ifRoom"/>
+
+</menu>

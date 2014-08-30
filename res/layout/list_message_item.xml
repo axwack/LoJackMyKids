@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/ListBackground"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <ImageView
+        android:id="@+id/list_message_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_gravity="center_vertical"
+        android:contentDescription="@string/known_location"
+        android:padding="5dp"
+        android:src="@drawable/btn_radio_on_holo_light" />
+
+    <TextView
+        android:id="@+id/list_message_title"
+        style="@style/MyListViewStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/list_message_icon"
+        android:background="#000000" />
+
+    <TextView
+        android:id="@+id/list_Messages_sender"
+        style="@style/subject"
+        android:layout_toRightOf="@id/list_message_icon"
+        android:layout_width="match_parent"
+        android:layout_below="@id/list_message_title"
+        android:layout_height="wrap_content"
+        android:background="#000000" />
+
+</RelativeLayout>
