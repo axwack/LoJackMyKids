@@ -152,7 +152,7 @@ int bool abc_config_actionMenuItemAllCaps 0x7f0a0005
 int bool abc_config_allowActionMenuItemTextWithIcon 0x7f0a0004
 int bool abc_config_showMenuShortcutsWhenKeyboardPresent 0x7f0a0003
 int bool abc_split_action_bar_is_narrow 0x7f0a0002
-int color abc_search_url_text_holo 0x7f06001a
+int color abc_search_url_text_holo 0x7f06001f
 int color abc_search_url_text_normal 0x7f060017
 int color abc_search_url_text_pressed 0x7f060019
 int color abc_search_url_text_selected 0x7f060018
@@ -166,8 +166,13 @@ int color common_signin_btn_light_text_default 0x7f060004
 int color common_signin_btn_light_text_disabled 0x7f060006
 int color common_signin_btn_light_text_focused 0x7f060007
 int color common_signin_btn_light_text_pressed 0x7f060005
-int color common_signin_btn_text_dark 0x7f06001b
-int color common_signin_btn_text_light 0x7f06001c
+int color common_signin_btn_text_dark 0x7f060020
+int color common_signin_btn_text_light 0x7f060021
+int color list_row_default_bg 0x7f06001c
+int color list_row_pressed_bg 0x7f06001d
+int color list_row_selected_bg 0x7f06001e
+int color text_color_default 0x7f06001a
+int color text_color_inverse 0x7f06001b
 int color wallet_bright_foreground_disabled_holo_light 0x7f06000f
 int color wallet_bright_foreground_holo_dark 0x7f06000a
 int color wallet_bright_foreground_holo_light 0x7f060010
@@ -181,8 +186,8 @@ int color wallet_hint_foreground_holo_dark 0x7f060012
 int color wallet_hint_foreground_holo_light 0x7f060011
 int color wallet_holo_blue_light 0x7f060015
 int color wallet_link_text_light 0x7f060016
-int color wallet_primary_text_holo_light 0x7f06001d
-int color wallet_secondary_text_holo_dark 0x7f06001e
+int color wallet_primary_text_holo_light 0x7f060022
+int color wallet_secondary_text_holo_dark 0x7f060023
 int dimen abc_action_bar_default_height 0x7f0b0002
 int dimen abc_action_bar_icon_vertical_padding 0x7f0b0003
 int dimen abc_action_bar_progress_bar_size 0x7f0b000a
@@ -326,8 +331,9 @@ int drawable ic_plusone_standard_off_client 0x7f020074
 int drawable ic_plusone_tall_off_client 0x7f020075
 int drawable image 0x7f020076
 int drawable list_background 0x7f020077
-int drawable powered_by_google_dark 0x7f020078
-int drawable powered_by_google_light 0x7f020079
+int drawable list_item_text_selector 0x7f020078
+int drawable powered_by_google_dark 0x7f020079
+int drawable powered_by_google_light 0x7f02007a
 int id action_bar 0x7f08002e
 int id action_bar_activity_content 0x7f080027
 int id action_bar_container 0x7f08002d
@@ -341,6 +347,7 @@ int id action_menu_presenter 0x7f080029
 int id action_mode_close_button 0x7f080036
 int id action_settings 0x7f08005c
 int id activity_chooser_view_content 0x7f080037
+int id address 0x7f080056
 int id always 0x7f08001e
 int id beginning 0x7f080023
 int id book_now 0x7f080010
@@ -349,6 +356,7 @@ int id buyButton 0x7f08000a
 int id buy_now 0x7f08000f
 int id buy_with_google 0x7f08000e
 int id checkbox 0x7f08003f
+int id cityState 0x7f080057
 int id classic 0x7f080011
 int id collapseActionView 0x7f080020
 int id container 0x7f08004e
@@ -375,11 +383,9 @@ int id image 0x7f080039
 int id knownLocationFragmentLayout 0x7f080050
 int id known_locations_listview 0x7f080055
 int id known_locations_map 0x7f080053
+int id latLng 0x7f080058
 int id listMode 0x7f080014
-int id list_Messages_sender 0x7f080058
 int id list_item 0x7f08003b
-int id list_message_icon 0x7f080056
-int id list_message_title 0x7f080057
 int id map 0x7f080059
 int id match_parent 0x7f08000c
 int id middle 0x7f080024
@@ -659,7 +665,7 @@ int style Widget_AppCompat_PopupMenu 0x7f050030
 int style Widget_AppCompat_ProgressBar 0x7f05000f
 int style Widget_AppCompat_ProgressBar_Horizontal 0x7f05000e
 int style Widget_AppCompat_Spinner_DropDown_ActionBar 0x7f050027
-int style subject 0x7f050091
+int style address 0x7f050091
 int[] styleable ActionBar { 0x7f010045, 0x7f010046, 0x7f010047, 0x7f010048, 0x7f010049, 0x7f01004a, 0x7f01004b, 0x7f01004c, 0x7f01004d, 0x7f01004e, 0x7f01004f, 0x7f010050, 0x7f010051, 0x7f010052, 0x7f010053, 0x7f010054, 0x7f010055, 0x7f010056, 0x7f010057 }
 int styleable ActionBar_background 10
 int styleable ActionBar_backgroundSplit 12
