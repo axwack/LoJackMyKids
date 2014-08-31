@@ -74,35 +74,34 @@ public class KnownLocations extends BaseAdapter implements Adapter {
 		LayoutInflater inflater = (LayoutInflater) context
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-		View view = (View) inflater.inflate(
-				R.layout.list_message_item, null);
+		View view = (View) inflater.inflate(R.layout.list_message_item, null);
 
 		KnownLocation kL = ListKnownLocation.get(position);
 		String Address = kL.getAddress();
-		double lat = kL.getLat();
-		double lng = kL.getLat();
+		String City_State = kL.getCityState();
+		String LatLng = "Lat: " + Double.toString(kL.getLat()) + " Lng: "+Double.toString(kL.getLng());
 
-		TextView titleView = (TextView) view
-				.findViewById(R.id.list_message_title);
-		TextView senderView = (TextView) view
-				.findViewById(R.id.list_Messages_sender);
-		ImageView iconView = (ImageView) view
-				.findViewById(R.id.list_message_icon);
-
-		boolean isRead = kL.isRead();
-
-		int iconId = R.drawable.btn_radio_on_holo_light;
-
-		if (isRead) {
-			iconId = R.drawable.btn_radio_on_disabled_holo_light;
-		}
-
-		Drawable icon = context.getResources().getDrawable(iconId);
-
-		iconView.setImageDrawable(icon);
-
-		titleView.setText(Address);
-		//senderView.setText(sender);
+		TextView addressView = (TextView) view.findViewById(R.id.address);
+		TextView cityStateView = (TextView) view.findViewById(R.id.cityState);
+		TextView latLngView = (TextView) view.findViewById(R.id.latLng);
+		/*
+		 * ImageView iconView = (ImageView) view
+		 * .findViewById(R.id.list_message_icon);
+		 * 
+		 * boolean isRead = kL.isRead();
+		 * 
+		 * int iconId = R.drawable.btn_radio_on_holo_light;
+		 * 
+		 * if (isRead) { iconId = R.drawable.btn_radio_on_disabled_holo_light; }
+		 * 
+		 * Drawable icon = context.getResources().getDrawable(iconId);
+		 * 
+		 * iconView.setImageDrawable(icon);
+		 */
+		
+		addressView.setText(Address);
+		cityStateView.setText(City_State);
+		latLngView.setText(LatLng);
 		return view;
 	}
 

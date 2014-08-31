@@ -101,6 +101,7 @@ public class Database extends SQLiteOpenHelper {
 		}
 		this.count();
 		Log.i(MainActivity.DEBUGTAG, "Select finished.");
+		db.close();
 		return _address;
 	}
 
@@ -122,13 +123,14 @@ public class Database extends SQLiteOpenHelper {
 			KnownLocation k = new KnownLocation(c.getInt(0), c.getString(1),
 					c.getString(2), c.getDouble(3), c.getDouble(4),
 					c.getDouble(5));
-			Log.i(MainActivity.DEBUGTAG, "KnownLocation Retrieved:" + k);
+			Log.i(MainActivity.DEBUGTAG, "KnownLocation Retrieved:" + k.getAddress());
 			list.add(k);
-			Log.i(MainActivity.DEBUGTAG, "Record retrieved:" + _address
+			Log.i(MainActivity.DEBUGTAG, "Record retrieved:" +c.getString(1)
 					+ ": ID: " + c.getInt(0));
 		}
 		this.count();
 		Log.i(MainActivity.DEBUGTAG, "Select All finished.");
+		db.close();
 		return list;
 	}
 
@@ -146,6 +148,7 @@ public class Database extends SQLiteOpenHelper {
 		Cursor c = db.rawQuery(sql, null);
 		Log.i(MainActivity.DEBUGTAG,
 				"Number of Records in Table: " + c.getCount());
+		db.close();
 		return c.getCount();
 	}
 }

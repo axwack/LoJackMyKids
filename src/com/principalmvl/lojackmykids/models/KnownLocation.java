@@ -3,6 +3,26 @@ package com.principalmvl.lojackmykids.models;
 public class KnownLocation {
 
 	private String Address, CityState;
+	public String getCityState() {
+		return CityState;
+	}
+
+
+	public void setCityState(String cityState) {
+		CityState = cityState;
+	}
+
+
+	public double getTimestamp() {
+		return Timestamp;
+	}
+
+
+	public void setTimestamp(double timestamp) {
+		Timestamp = timestamp;
+	}
+
+
 	private double Lat,Lng, Timestamp;
 	private int id;
 	private boolean read = false;
