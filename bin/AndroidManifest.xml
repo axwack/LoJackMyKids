@@ -24,24 +24,6 @@
             </intent-filter>
         </activity>
 
-        <receiver
-            android:name=".GcmBroadcastReceiver"
-            android:permission="com.google.android.c2dm.permission.SEND" >
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-
-                <category android:name="com.example.gcm" />
-            </intent-filter>
-        </receiver>
-
-        <service android:name=".GcmIntentService" />
-
-        <provider
-            android:name=".DataProvider"
-            android:authorities="com.principalmvl.instachat.provider"
-            android:exported="false" >
-        </provider>
-
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
@@ -52,25 +34,41 @@
         <activity
             android:name=".KnownLocationsActivity"
             android:label="@string/set_action_locations"
-            android:parentActivityName="com.principalmvl.lojackmykids.MainActivity" >
+            android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.principalmvl.lojackmykids.MainActivity" />
         </activity>
-        <activity android:name="KnownListActivity" 
-            android:enabled="true" 
-            android:parentActivityName="com.principalmvl.lojackmykids.KnownLocationsActivity" android:label="@string/known_list_activity_name">
+        <activity
+            android:name=".KnownListActivity"
+            android:enabled="true"
+            android:label="@string/known_list_activity_name"
+            android:parentActivityName=".KnownLocationsActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.principalmvl.lojackmykids.KnownLocationsActivity" />
         </activity>
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings" >
+        </activity>
+        <receiver
+            android:name=".GcmBroadcastReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <category android:name="com.example.gcm" />
+            </intent-filter>
+        </receiver>
+        <service android:name=".GcmIntentService" />
+        
     </application>
 
     <permission
-        android:name="com.principalmvl.instachat.permission.C2D_MESSAGE"
+        android:name="com.principalmvl.lojackmykids.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
 
-    <uses-permission android:name="com.principalmvl.instachat.permission.C2D_MESSAGE" />
+    <uses-permission android:name="com.principalmvl.lojackmykids.permission.C2D_MESSAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />

@@ -2,6 +2,9 @@ package com.principalmvl.lojackmykids;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import android.app.Activity;
 import android.app.DialogFragment;
@@ -37,9 +40,10 @@ public class KnownLocationsActivity extends Activity implements
 	GoogleMap map;
 	MarkerOptions markerOptions;
 	LatLng latLng;
-	private PointCollector pointCollector = new PointCollector();
 	private Database db;
 	private List<Address> address;
+
+	private static final int zoomLevel = 10;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +55,7 @@ public class KnownLocationsActivity extends Activity implements
 			getFragmentManager().beginTransaction()
 					.add(R.id.container, new KnownLocationFragment()).commit();
 			db = new Database(this);
+
 		}
 	}
 
@@ -116,12 +121,28 @@ public class KnownLocationsActivity extends Activity implements
 	public void onDialogNegativeClick(DialogFragment dialog) {
 		// User touched the dialog's negative button
 		Log.i(MainActivity.DEBUGTAG, "Observer Negative Click");
+		dialog.dismiss();
+	}
+	
+	private void setUpMapIfNeeded() {
+		// Do a null check to confirm that we have not already
+		// instantiated
+		// the map.
+		if (map == null) {
+			map = ((MapFragment) getFragmentManager().findFragmentById(
+					R.id.known_locations_map)).getMap();
+
+			// Check if we were successful in obtaining the map.
+			if (map != null) {
+				// The Map is verified. It is now safe to manipulate the
+				// map.
+				map.setMyLocationEnabled(true);
+			
+			}
+		}
 	}
 
 	private void callBackFromAddressFind(List<Address> addresses) {
-
-		Log.i(MainActivity.DEBUGTAG, "Addresses in callback :" + addresses);
-		// Do we want to save this addresss?
 
 		DialogFragment dialog = new SaveAddressDialog();
 		dialog.show(getFragmentManager(), "Dialog");
@@ -170,105 +191,128 @@ public class KnownLocationsActivity extends Activity implements
 					String location = "97 Lincoln Ave. Cliffside Park, nj";
 					if (location != null && !location.equals("")) {
 						new GeocoderTask().execute(location);
-					}
 
+					}
 				}
 			});
 		}
-	}
+		
+		// An AsyncTask class for accessing the GeoCoding Web Service
+		public class GeocoderTask extends
+				AsyncTask<String, Void, List<Address>> {
 
-	// An AsyncTask class for accessing the GeoCoding Web Service
-	public class GeocoderTask extends AsyncTask<String, Void, List<Address>> {
+			private static final int zoomLevel = 10;
 
-		private static final int zoomLevel = 10;
+			@Override
+			protected List<Address> doInBackground(String... locationName) {
+				// Creating an instance of Geocoder class
+				Geocoder geocoder = new Geocoder(getBaseContext());
 
-		@Override
-		protected List<Address> doInBackground(String... locationName) {
-			// Creating an instance of Geocoder class
-			Geocoder geocoder = new Geocoder(getBaseContext());
+				List<Address> addresses = null;
 
-			List<Address> addresses = null;
-
-			try {
-				// Getting a maximum of 3 Address that matches the input text
-				addresses = (List<Address>) geocoder.getFromLocationName(
-						locationName[0], 3);
-			} catch (IOException e) {
-				e.printStackTrace();
+				try {
+					// Getting a maximum of 3 Address that matches the input
+					// text
+					addresses = (List<Address>) geocoder.getFromLocationName(
+							locationName[0], 3);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return addresses;
 			}
-			return addresses;
-		}
 
-		@Override
-		protected void onPostExecute(List<Address> addresses) {
+			@Override
+			protected void onPostExecute(List<Address> addresses) {
+				if (addresses == null) {
+					Toast.makeText(getBaseContext(), "No Location found",
+							Toast.LENGTH_SHORT).show();
+				}
+				setUpMapIfNeeded();
+				// Clears all the existing markers on the map
+				map.clear();
 
-			if (addresses == null) {
-				Toast.makeText(getBaseContext(), "No Location found",
-						Toast.LENGTH_SHORT).show();
+				// Adding Markers on Google Map for each matching address
+
+				final List<Address> address = addresses;
+
+				for (int i = 0; i < address.size(); i++) {
+					// Creating an instance of GeoPoint, to display in
+					// Google
+					// Map
+					latLng = new LatLng(address.get(i).getLatitude(), address
+							.get(i).getLongitude());
+					Log.i(MainActivity.DEBUGTAG,
+							"Address at: " + latLng.toString());
+
+					String addressText = String.format("%s, %s", address.get(i)
+							.getMaxAddressLineIndex() > 0 ? address.get(i)
+							.getAddressLine(0) : "", address.get(i)
+							.getCountryName());
+
+					markerOptions = new MarkerOptions();
+					markerOptions.position(latLng);
+					markerOptions.title(addressText);
+
+					Log.i(MainActivity.DEBUGTAG, "Adding Marker...");
+					map.addMarker(markerOptions);
+	
+				}
+				// Locate the first location
+
+				map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,
+						GeocoderTask.zoomLevel));
+				
+				try {
+					this.get(10000, TimeUnit.MILLISECONDS);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (TimeoutException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				callBackFromAddressFind(address); 
+				/*
+				 * map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng ,
+				 * this.zoomLevel), new CancelableCallback() {
+				 * 
+				 * @Override public void onFinish() { DialogFragment newFragment
+				 * = new SaveAddressDialog();
+				 * newFragment.show(getFragmentManager(), "saveAddress");
+				 * callBackFromAddressFind(address); }
+				 * 
+				 * @Override public void onCancel() {
+				 * Toast.makeText(getBaseContext(),
+				 * "Animation to Sydney canceled", Toast.LENGTH_SHORT) .show();
+				 * } });
+				 */
+				Log.i(MainActivity.DEBUGTAG, "Zooming to " + zoomLevel);
 			}
-			setUpMapIfNeeded();
-			// Clears all the existing markers on the map
-			map.clear();
+			
+			private void setUpMapIfNeeded() {
+				// Do a null check to confirm that we have not already
+				// instantiated
+				// the map.
+				if (map == null) {
+					map = ((MapFragment) getFragmentManager().findFragmentById(
+							R.id.known_locations_map)).getMap();
 
-			// Adding Markers on Google Map for each matching address
-
-			final List<Address> address = addresses;
-
-			for (int i = 0; i < address.size(); i++) {
-				// Creating an instance of GeoPoint, to display in Google Map
-				latLng = new LatLng(address.get(i).getLatitude(), address
-						.get(i).getLongitude());
-				Log.i(MainActivity.DEBUGTAG, "Address at: " + latLng.toString());
-
-				String addressText = String.format("%s, %s", address.get(i)
-						.getMaxAddressLineIndex() > 0 ? address.get(i)
-						.getAddressLine(0) : "", address.get(i)
-						.getCountryName());
-
-				markerOptions = new MarkerOptions();
-				markerOptions.position(latLng);
-				markerOptions.title(addressText);
-
-				Log.i(MainActivity.DEBUGTAG, "Adding Marker...");
-				map.addMarker(markerOptions);
-			}
-			// Locate the first location
-
-			map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,
-					this.zoomLevel));
-
-			callBackFromAddressFind(address);
-			/*
-			 * map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,
-			 * this.zoomLevel), new CancelableCallback() {
-			 * 
-			 * @Override public void onFinish() { DialogFragment newFragment =
-			 * new SaveAddressDialog(); newFragment.show(getFragmentManager(),
-			 * "saveAddress"); callBackFromAddressFind(address); }
-			 * 
-			 * @Override public void onCancel() {
-			 * Toast.makeText(getBaseContext(), "Animation to Sydney canceled",
-			 * Toast.LENGTH_SHORT) .show(); } });
-			 */
-			Log.i(MainActivity.DEBUGTAG, "Zooming to " + zoomLevel);
-		}
-
-		private void setUpMapIfNeeded() {
-			// Do a null check to confirm that we have not already instantiated
-			// the map.
-			if (map == null) {
-				map = ((MapFragment) getFragmentManager().findFragmentById(
-						R.id.known_locations_map)).getMap();
-
-				// Check if we were successful in obtaining the map.
-				if (map != null) {
-					// The Map is verified. It is now safe to manipulate the
-					// map.
-					map.setMyLocationEnabled(true);
+					// Check if we were successful in obtaining the map.
+					if (map != null) {
+						// The Map is verified. It is now safe to manipulate the
+						// map.
+						map.setMyLocationEnabled(true);
+					
+					}
 				}
 			}
-		}
 
+		}
 	}
+
 
 }

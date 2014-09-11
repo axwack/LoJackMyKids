@@ -3,13 +3,14 @@ package com.principalmvl.lojackmykids;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.principalmvl.lojackmykids.R;
 import android.app.Activity;
 import android.os.Bundle;
 import android.widget.ListView;
 
-import com.principalmvl.lojackmykids.models.KnownLocation;
 import com.principalmvl.lojackmykids.Adapters.KnownLocations;
 import com.principalmvl.lojackmykids.Database.Database;
+import com.principalmvl.lojackmykids.models.KnownLocation;
 
 public class KnownListActivity extends Activity {
 	private Database db = new Database(this);

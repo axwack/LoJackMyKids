@@ -61,7 +61,7 @@ public class SaveAddressDialog extends DialogFragment {
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int id) {
 								// User cancelled the dialog
-								mListener.onDialogPositiveClick(SaveAddressDialog.this);
+								mListener.onDialogNegativeClick(SaveAddressDialog.this);
 							}
 						});
 		// Create the AlertDialog object and return it

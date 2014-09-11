@@ -1,5 +1,7 @@
 package com.principalmvl.lojackmykids;
 
+import static com.principalmvl.lojackmykids.Helpers.CommonUtilities.SENDER_ID;
+
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -28,14 +30,15 @@ import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.principalmvl.lojackmykids.Adapters.TabsPagerAdapter;
-import com.principalmvl.lojackmykids.R;
+import com.principalmvl.lojackmykids.Helpers.ServerUtilities;
 
 public class MainActivity extends FragmentActivity implements TabListener,
 		GooglePlayServicesClient.ConnectionCallbacks,
 		GooglePlayServicesClient.OnConnectionFailedListener // ,PointCollectorListener
 {
 	private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9001;
-	private final static int KNOWN_LOCATIONS_RESULT=1000;
+	private final static int KNOWN_LOCATIONS_RESULT = 1000;
+	private final static int SETTINGS_RESULT = 1001;
 	public static final String DEBUGTAG = "VJL";
 
 	private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
@@ -44,6 +47,7 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	public static final String PROPERTY_REG_ID = "22298386436";
 	private static final String PROPERTY_APP_VERSION = "appVersion";
 
+    
 	private ViewPager viewPager;
 	private TabsPagerAdapter mAdapter;
 	private ActionBar actionBar;
@@ -56,9 +60,9 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	 * Substitute you own sender ID here. This is the project number you got
 	 * from the API Console, as described in "Getting Started."
 	 */
-	String SENDER_ID = "Your-Sender-ID";
-
-	TextView mDisplay;
+	//String SENDER_ID = com.principalmvl.lojackmykids.Helpers.CommonUtilities.SENDER_ID; // PROJECT
+																				// ID:
+																				// https://console.developers.google.com/project/apps~metal-complex-658
 	GoogleCloudMessaging gcm;
 	AtomicInteger msgId = new AtomicInteger();
 	SharedPreferences prefs;
@@ -84,9 +88,6 @@ public class MainActivity extends FragmentActivity implements TabListener,
 			actionBar.addTab(actionBar.newTab().setText(tab_name)
 					.setTabListener(this));
 		}
-
-		// mLocationClient = new LocationClient(this, this, this);
-		// mCurrentLocation = mLocationClient.getLastLocation();
 
 		// addTouchListener();
 		// this.pointCollector.setListener(this);
@@ -117,7 +118,7 @@ public class MainActivity extends FragmentActivity implements TabListener,
 		// Check device for Play Services APK. If check succeeds, proceed with
 		// GCM registration.
 		if (checkPlayServices()) {
-			gcm = GoogleCloudMessaging.getInstance(this);
+			//gcm = GoogleCloudMessaging.getInstance(this);
 			regid = getRegistrationId(context);
 
 			if (regid.isEmpty()) {
@@ -145,6 +146,7 @@ public class MainActivity extends FragmentActivity implements TabListener,
 		// mLocationClient.disconnect();
 	}
 
+
 	/**
 	 * Gets the current registration ID for application on GCM service.
 	 * <p>
@@ -157,7 +159,7 @@ public class MainActivity extends FragmentActivity implements TabListener,
 		final SharedPreferences prefs = getGCMPreferences(context);
 		String registrationId = prefs.getString(PROPERTY_REG_ID, "");
 		if (registrationId.isEmpty()) {
-			Log.i(DEBUGTAG, "Registration not found.");
+			Log.i(DEBUGTAG, "Existing Registration not found. We need a new one from the server...");
 			return "";
 		}
 		// Check if app was updated; if so, it must clear the registration ID
@@ -223,15 +225,18 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	private void registerInBackground() {
 		new AsyncTask() {
 			@SuppressWarnings("unused")
-			protected String doInBackground(Void... params) {
-				String msg = "";
+			protected void onPostExecute(String regId) {
+				Log.i(DEBUGTAG, "Got RegID: "+regid);
+			}
+
+			@Override
+			protected String doInBackground(Object... params) {
 				try {
 					if (gcm == null) {
 						gcm = GoogleCloudMessaging.getInstance(context);
 					}
 					regid = gcm.register(SENDER_ID);
-					msg = "Device registered, registration ID=" + regid;
-
+					Log.i(DEBUGTAG, "Device registered, registration ID=" + regid);
 					// You should send the registration ID to your server over
 					// HTTP,
 					// so it can use GCM/HTTP or CCS to send messages to your
@@ -250,24 +255,15 @@ public class MainActivity extends FragmentActivity implements TabListener,
 					// Persist the regID - no need to register again.
 					storeRegistrationId(context, regid);
 				} catch (IOException ex) {
-					msg = "Error :" + ex.getMessage();
+					Log.i(MainActivity.DEBUGTAG, "Error :" + ex.getMessage());
 					// If there is an error, don't just keep trying to register.
 					// Require the user to click a button again, or perform
 					// exponential back-off.
 				}
-				return msg;
+				return regid;
+
 			}
 
-			@SuppressWarnings("unused")
-			protected void onPostExecute(String msg) {
-				mDisplay.append(msg + "\n");
-			}
-
-			@Override
-			protected Object doInBackground(Object... params) {
-				// TODO Auto-generated method stub
-				return null;
-			}
 		}.execute(null, null, null);
 
 	}
@@ -298,7 +294,7 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	 * message using the 'from' address in the message.
 	 */
 	private void sendRegistrationIdToBackend() {
-		// Your implementation here.
+		ServerUtilities.register(context, regid);
 	}
 
 	/**
@@ -330,24 +326,24 @@ public class MainActivity extends FragmentActivity implements TabListener,
 		int id = item.getItemId();
 
 		if (id == R.id.action_settings) {
+			Intent i = new Intent(this, SettingsActivity.class);
+			startActivityForResult(i, SETTINGS_RESULT);
 
 		} else if (id == R.id.set_known_locations) {
 			Log.i(DEBUGTAG, "Going to Known Locations Activity...");
 
 			this.goToKnownLocations();
-		} 
-			
+		}
 		return super.onOptionsItemSelected(item);
 	}
 
-	private void goToKnownLocations(){
+	private void goToKnownLocations() {
 		Log.i(DEBUGTAG, "...starting Known Locations Activity");
 		Intent i = new Intent(this, KnownLocationsActivity.class);
 		this.startActivityForResult(i, KNOWN_LOCATIONS_RESULT);
 		Log.i(DEBUGTAG, "Returned from Known Locations...");
 	}
 
-	
 	/*
 	 * private void addTouchListener() { ImageView placeholder = (ImageView)
 	 * findViewById(R.id.action_bar);
@@ -355,13 +351,14 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	 */
 
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-		
-		switch(requestCode){
-		
-			case KNOWN_LOCATIONS_RESULT:
-				Log.i(DEBUGTAG, "Back From Known Locations Maps...");
-				break;
+	protected void onActivityResult(int requestCode, int resultCode,
+			Intent intent) {
+
+		switch (requestCode) {
+
+		case KNOWN_LOCATIONS_RESULT:
+			Log.i(DEBUGTAG, "Back From Known Locations Maps...");
+			break;
 		}
 		super.onActivityResult(resultCode, requestCode, intent);
 	}
