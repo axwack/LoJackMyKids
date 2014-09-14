@@ -3,6 +3,7 @@ package com.principalmvl.lojackmykids;
 import static com.principalmvl.lojackmykids.Helpers.CommonUtilities.SENDER_ID;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import android.app.ActionBar;
@@ -68,7 +69,7 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	SharedPreferences prefs;
 	Context context;
 
-	String regid;
+	String regId;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -119,11 +120,12 @@ public class MainActivity extends FragmentActivity implements TabListener,
 		// GCM registration.
 		if (checkPlayServices()) {
 			//gcm = GoogleCloudMessaging.getInstance(this);
-			regid = getRegistrationId(context);
+			regId = getRegistrationId(context);
 
-			if (regid.isEmpty()) {
+			//if (regId.isEmpty()) {
 				registerInBackground();
-			}
+			//}
+			
 		} else {
 			Log.i(DEBUGTAG, "No valid Google Play Services APK found.");
 		}
@@ -158,6 +160,8 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	private String getRegistrationId(Context context) {
 		final SharedPreferences prefs = getGCMPreferences(context);
 		String registrationId = prefs.getString(PROPERTY_REG_ID, "");
+		Log.i(MainActivity.DEBUGTAG, "[getRegistrationId] Registration Id: " + registrationId);
+		
 		if (registrationId.isEmpty()) {
 			Log.i(DEBUGTAG, "Existing Registration not found. We need a new one from the server...");
 			return "";
@@ -226,7 +230,7 @@ public class MainActivity extends FragmentActivity implements TabListener,
 		new AsyncTask() {
 			@SuppressWarnings("unused")
 			protected void onPostExecute(String regId) {
-				Log.i(DEBUGTAG, "Got RegID: "+regid);
+				Log.i(DEBUGTAG, "Got RegID: "+regId);
 			}
 
 			@Override
@@ -235,8 +239,8 @@ public class MainActivity extends FragmentActivity implements TabListener,
 					if (gcm == null) {
 						gcm = GoogleCloudMessaging.getInstance(context);
 					}
-					regid = gcm.register(SENDER_ID);
-					Log.i(DEBUGTAG, "Device registered, registration ID=" + regid);
+					regId = gcm.register(SENDER_ID);
+					Log.i(DEBUGTAG, "Device registered, registration ID=" + regId);
 					// You should send the registration ID to your server over
 					// HTTP,
 					// so it can use GCM/HTTP or CCS to send messages to your
@@ -253,14 +257,14 @@ public class MainActivity extends FragmentActivity implements TabListener,
 					// message using the 'from' address in the message.
 
 					// Persist the regID - no need to register again.
-					storeRegistrationId(context, regid);
+					storeRegistrationId(context, regId);
 				} catch (IOException ex) {
 					Log.i(MainActivity.DEBUGTAG, "Error :" + ex.getMessage());
 					// If there is an error, don't just keep trying to register.
 					// Require the user to click a button again, or perform
 					// exponential back-off.
 				}
-				return regid;
+				return regId;
 
 			}
 
@@ -292,9 +296,10 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	 * GCM/HTTP or CCS to send messages to your app. Not needed for this demo
 	 * since the device sends upstream messages to a server that echoes back the
 	 * message using the 'from' address in the message.
+	 * @throws UnsupportedEncodingException 
 	 */
-	private void sendRegistrationIdToBackend() {
-		ServerUtilities.register(context, regid);
+	private void sendRegistrationIdToBackend() throws UnsupportedEncodingException {
+		ServerUtilities.register(context, regId);
 	}
 
 	/**
