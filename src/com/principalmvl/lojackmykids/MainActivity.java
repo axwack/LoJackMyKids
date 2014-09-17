@@ -9,8 +9,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.ActionBar.TabListener;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
@@ -20,9 +23,15 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,14 +50,13 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	private final static int KNOWN_LOCATIONS_RESULT = 1000;
 	private final static int SETTINGS_RESULT = 1001;
 	public static final String DEBUGTAG = "VJL";
-
+	private static boolean device_is_child = false;
+	private static boolean password_set = false;
 	private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-
 	public static final String EXTRA_MESSAGE = "message";
 	public static final String PROPERTY_REG_ID = "22298386436";
 	private static final String PROPERTY_APP_VERSION = "appVersion";
 
-    
 	private ViewPager viewPager;
 	private TabsPagerAdapter mAdapter;
 	private ActionBar actionBar;
@@ -61,19 +69,35 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	 * Substitute you own sender ID here. This is the project number you got
 	 * from the API Console, as described in "Getting Started."
 	 */
-	//String SENDER_ID = com.principalmvl.lojackmykids.Helpers.CommonUtilities.SENDER_ID; // PROJECT
-																				// ID:
-																				// https://console.developers.google.com/project/apps~metal-complex-658
+	// String SENDER_ID =
+	// com.principalmvl.lojackmykids.Helpers.CommonUtilities.SENDER_ID; //
+	// PROJECT
+	// ID:
+	// https://console.developers.google.com/project/apps~metal-complex-658
 	GoogleCloudMessaging gcm;
 	AtomicInteger msgId = new AtomicInteger();
 	SharedPreferences prefs;
 	Context context;
-
 	String regId;
+	/*
+	 * Set the password dialog to identify it. This has to be unique
+	 */
+	private static final int PASSWORD_DIALOG_ID = 4;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		/*
+		 * Check preferences to determine if password is on or the device is an
+		 * admin or child
+		 */
+		checkForSharedPrefs();
+
+		if (!password_set) {
+			Intent intent = new Intent(this, PasswordActivity.class);
+			
+		}
+
 		setContentView(R.layout.activity_main);
 
 		viewPager = (ViewPager) findViewById(R.id.pager);
@@ -89,6 +113,10 @@ public class MainActivity extends FragmentActivity implements TabListener,
 			actionBar.addTab(actionBar.newTab().setText(tab_name)
 					.setTabListener(this));
 		}
+		/*
+		 * Check the shared preference to see if the system is admin or child.
+		 * Also check to see if password is set.
+		 */
 
 		// addTouchListener();
 		// this.pointCollector.setListener(this);
@@ -119,16 +147,100 @@ public class MainActivity extends FragmentActivity implements TabListener,
 		// Check device for Play Services APK. If check succeeds, proceed with
 		// GCM registration.
 		if (checkPlayServices()) {
-			//gcm = GoogleCloudMessaging.getInstance(this);
+			// gcm = GoogleCloudMessaging.getInstance(this);
 			regId = getRegistrationId(context);
 
-			//if (regId.isEmpty()) {
-				registerInBackground();
-			//}
-			
+			// if (regId.isEmpty()) {
+			registerInBackground();
+			// }
+
 		} else {
 			Log.i(DEBUGTAG, "No valid Google Play Services APK found.");
 		}
+	}
+
+	@Override
+	protected Dialog onCreateDialog(int id) {
+
+		switch (id) {
+		case PASSWORD_DIALOG_ID:
+			LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+			final View layout = inflater.inflate(R.layout.password_dialog,
+					(ViewGroup) findViewById(R.id.password_dialog));
+			final EditText password1 = (EditText) layout
+					.findViewById(R.id.EditText_Pwd1);
+			final EditText password2 = (EditText) layout
+					.findViewById(R.id.EditText_Pwd2);
+			final TextView error = (TextView) layout
+					.findViewById(R.id.TextView_PwdProblem);
+
+			// TODO: Create Dialog here and return it (see subsequent steps)
+
+			password2.addTextChangedListener(new TextWatcher() {
+
+				public void beforeTextChanged(CharSequence s, int start,
+						int count, int after) {
+				}
+
+				public void onTextChanged(CharSequence s, int start,
+						int before, int count) {
+				}
+
+				@Override
+				public void afterTextChanged(Editable s) {
+					String strPass1 = password1.getText().toString();
+					String strPass2 = password2.getText().toString();
+					if (strPass1.equals(strPass2)) {
+						error.setText(R.string.settings_pwd_equal);
+					} else {
+						error.setText(R.string.settings_pwd_not_equal);
+					}
+				}
+			});
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Enter Password");
+			builder.setView(layout);
+
+			builder.setNegativeButton(android.R.string.cancel,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
+							removeDialog(PASSWORD_DIALOG_ID);
+						}
+					});
+
+			builder.setPositiveButton(android.R.string.ok,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							String strPassword1 = password1.getText()
+									.toString();
+							String strPassword2 = password2.getText()
+									.toString();
+							if (strPassword1.equals(strPassword2)) {
+								Toast.makeText(MainActivity.this,
+										"Matching passwords=" + strPassword2,
+										Toast.LENGTH_SHORT).show();
+							}
+							removeDialog(PASSWORD_DIALOG_ID);
+						}
+					});
+			AlertDialog passwordDialog = builder.create();
+			return passwordDialog;
+		}
+		;
+
+		return super.onCreateDialog(id);
+	}
+
+	private void checkForSharedPrefs() {
+
+		SharedPreferences sharedPref = this
+				.getPreferences(Context.MODE_PRIVATE);
+
+		device_is_child = getResources().getBoolean(R.string.device_is_child);
+		password_set = sharedPref.getBoolean(getString(R.string.password_set),
+				false);
 	}
 
 	@Override
@@ -148,7 +260,6 @@ public class MainActivity extends FragmentActivity implements TabListener,
 		// mLocationClient.disconnect();
 	}
 
-
 	/**
 	 * Gets the current registration ID for application on GCM service.
 	 * <p>
@@ -160,10 +271,12 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	private String getRegistrationId(Context context) {
 		final SharedPreferences prefs = getGCMPreferences(context);
 		String registrationId = prefs.getString(PROPERTY_REG_ID, "");
-		Log.i(MainActivity.DEBUGTAG, "[getRegistrationId] Registration Id: " + registrationId);
-		
+		Log.i(MainActivity.DEBUGTAG, "[getRegistrationId] Registration Id: "
+				+ registrationId);
+
 		if (registrationId.isEmpty()) {
-			Log.i(DEBUGTAG, "Existing Registration not found. We need a new one from the server...");
+			Log.i(DEBUGTAG,
+					"Existing Registration not found. We need a new one from the server...");
 			return "";
 		}
 		// Check if app was updated; if so, it must clear the registration ID
@@ -230,7 +343,7 @@ public class MainActivity extends FragmentActivity implements TabListener,
 		new AsyncTask() {
 			@SuppressWarnings("unused")
 			protected void onPostExecute(String regId) {
-				Log.i(DEBUGTAG, "Got RegID: "+regId);
+				Log.i(DEBUGTAG, "Got RegID: " + regId);
 			}
 
 			@Override
@@ -240,7 +353,8 @@ public class MainActivity extends FragmentActivity implements TabListener,
 						gcm = GoogleCloudMessaging.getInstance(context);
 					}
 					regId = gcm.register(SENDER_ID);
-					Log.i(DEBUGTAG, "Device registered, registration ID=" + regId);
+					Log.i(DEBUGTAG, "Device registered, registration ID="
+							+ regId);
 					// You should send the registration ID to your server over
 					// HTTP,
 					// so it can use GCM/HTTP or CCS to send messages to your
@@ -296,9 +410,11 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	 * GCM/HTTP or CCS to send messages to your app. Not needed for this demo
 	 * since the device sends upstream messages to a server that echoes back the
 	 * message using the 'from' address in the message.
-	 * @throws UnsupportedEncodingException 
+	 * 
+	 * @throws UnsupportedEncodingException
 	 */
-	private void sendRegistrationIdToBackend() throws UnsupportedEncodingException {
+	private void sendRegistrationIdToBackend()
+			throws UnsupportedEncodingException {
 		ServerUtilities.register(context, regId);
 	}
 
@@ -336,8 +452,12 @@ public class MainActivity extends FragmentActivity implements TabListener,
 
 		} else if (id == R.id.set_known_locations) {
 			Log.i(DEBUGTAG, "Going to Known Locations Activity...");
-
 			this.goToKnownLocations();
+		} else if (id == R.id.set_client_only_view) {
+			if (item.isChecked())
+				item.setChecked(false);
+			else
+				item.setChecked(true);
 		}
 		return super.onOptionsItemSelected(item);
 	}

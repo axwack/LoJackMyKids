@@ -22,5 +22,14 @@
     <string name="server_registered">From Demo Server: successfully added device!!</string>
     <string name="server_register_error">Could not register device on Demo Server after %1$d attempts.</string>
     <string name="server_unregister_error">Could not unregister device on Demo Server (%1$s).</string>
-        <string name="server_unregistered">From Demo Server: successfully removed device!</string>
+    <string name="server_unregistered">From Demo Server: successfully removed device!</string>
+    <string name="set_client_only_view">Set this device as Child Client?</string>
+    <string name="settings_password">password</string>
+    <string name="settings_password2">password2</string>
+    <string name="settings_pwd_equal">Passwords match.</string>
+    <string name="settings_pwd_not_equal">Passwords do not match!</string>
+    <string name="device_is_child">True</string>
+    <string name="password_set">true</string>
+    <string name="title_activity_password">PasswordActivity</string>
+
 </resources>
