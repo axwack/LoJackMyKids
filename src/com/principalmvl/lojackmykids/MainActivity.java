@@ -50,8 +50,7 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	private final static int KNOWN_LOCATIONS_RESULT = 1000;
 	private final static int SETTINGS_RESULT = 1001;
 	public static final String DEBUGTAG = "VJL";
-	private static boolean device_is_child = false;
-	private static boolean password_set = false;
+
 	private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 	public static final String EXTRA_MESSAGE = "message";
 	public static final String PROPERTY_REG_ID = "22298386436";
@@ -79,24 +78,11 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	SharedPreferences prefs;
 	Context context;
 	String regId;
-	/*
-	 * Set the password dialog to identify it. This has to be unique
-	 */
-	private static final int PASSWORD_DIALOG_ID = 4;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		/*
-		 * Check preferences to determine if password is on or the device is an
-		 * admin or child
-		 */
-		checkForSharedPrefs();
-
-		if (!password_set) {
-			Intent intent = new Intent(this, PasswordActivity.class);
-			
-		}
+		
 
 		setContentView(R.layout.activity_main);
 
@@ -159,89 +145,7 @@ public class MainActivity extends FragmentActivity implements TabListener,
 		}
 	}
 
-	@Override
-	protected Dialog onCreateDialog(int id) {
-
-		switch (id) {
-		case PASSWORD_DIALOG_ID:
-			LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-			final View layout = inflater.inflate(R.layout.password_dialog,
-					(ViewGroup) findViewById(R.id.password_dialog));
-			final EditText password1 = (EditText) layout
-					.findViewById(R.id.EditText_Pwd1);
-			final EditText password2 = (EditText) layout
-					.findViewById(R.id.EditText_Pwd2);
-			final TextView error = (TextView) layout
-					.findViewById(R.id.TextView_PwdProblem);
-
-			// TODO: Create Dialog here and return it (see subsequent steps)
-
-			password2.addTextChangedListener(new TextWatcher() {
-
-				public void beforeTextChanged(CharSequence s, int start,
-						int count, int after) {
-				}
-
-				public void onTextChanged(CharSequence s, int start,
-						int before, int count) {
-				}
-
-				@Override
-				public void afterTextChanged(Editable s) {
-					String strPass1 = password1.getText().toString();
-					String strPass2 = password2.getText().toString();
-					if (strPass1.equals(strPass2)) {
-						error.setText(R.string.settings_pwd_equal);
-					} else {
-						error.setText(R.string.settings_pwd_not_equal);
-					}
-				}
-			});
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("Enter Password");
-			builder.setView(layout);
-
-			builder.setNegativeButton(android.R.string.cancel,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog,
-								int whichButton) {
-							removeDialog(PASSWORD_DIALOG_ID);
-						}
-					});
-
-			builder.setPositiveButton(android.R.string.ok,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) {
-							String strPassword1 = password1.getText()
-									.toString();
-							String strPassword2 = password2.getText()
-									.toString();
-							if (strPassword1.equals(strPassword2)) {
-								Toast.makeText(MainActivity.this,
-										"Matching passwords=" + strPassword2,
-										Toast.LENGTH_SHORT).show();
-							}
-							removeDialog(PASSWORD_DIALOG_ID);
-						}
-					});
-			AlertDialog passwordDialog = builder.create();
-			return passwordDialog;
-		}
-		;
-
-		return super.onCreateDialog(id);
-	}
-
-	private void checkForSharedPrefs() {
-
-		SharedPreferences sharedPref = this
-				.getPreferences(Context.MODE_PRIVATE);
-
-		device_is_child = getResources().getBoolean(R.string.device_is_child);
-		password_set = sharedPref.getBoolean(getString(R.string.password_set),
-				false);
-	}
+	
 
 	@Override
 	protected void onStart() {
