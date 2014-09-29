@@ -80,6 +80,11 @@
         </receiver>
 
         <service android:name=".GcmIntentService" />
+
+        <activity
+            android:name=".ChildActivity"
+            android:label="@string/title_activity_child" android:screenOrientation="portrait">
+        </activity>
     </application>
 
     <permission

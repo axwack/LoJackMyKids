@@ -31,5 +31,8 @@
     <string name="device_is_child">True</string>
     <string name="password_set">true</string>
     <string name="title_activity_password">Lo Jack My Kids - Password Entry</string>
+    <string name="title_activity_child">Lo Jack My Kids -  Child</string>
+    <string name="child_layout_background">Child Layout Background</string>
+    <string name="password">PASSWORD</string>
 
 </resources>
