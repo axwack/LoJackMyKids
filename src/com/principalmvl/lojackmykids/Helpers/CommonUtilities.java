@@ -27,7 +27,7 @@ public final class CommonUtilities {
 	 /**
      * Sometimes we may need to put the IP of the machine. Android expects this to run on a server. Localhost doesn't know where it is.
      */
-	public static final String SERVER_IP_NAME = "192.168.1.13";
+	public static final String SERVER_IP_NAME = "192.168.1.114";
     /**
      * Base URL of the Demo Server (such as http://my_host:8080/gcm-demo)
      */

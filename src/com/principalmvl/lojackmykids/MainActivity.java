@@ -9,8 +9,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.ActionBar.TabListener;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
@@ -20,9 +23,16 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -46,12 +56,14 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	public static final String PROPERTY_REG_ID = "22298386436";
 	private static final String PROPERTY_APP_VERSION = "appVersion";
 
+
+
 	private ViewPager viewPager;
 	private TabsPagerAdapter mAdapter;
 	private ActionBar actionBar;
 	private SharedPreferences sharedPref;
 	boolean device_is_child, password_set;
-	public final static String PREFS_NAME="LJKIDSPrefs";
+	public final static String PREFS_NAME = "LJKIDSPrefs";
 	// Global variable to hold the current location
 	// private Location mCurrentLocation;
 	// private LocationClient mLocationClient;
@@ -88,18 +100,21 @@ public class MainActivity extends FragmentActivity implements TabListener,
 		for (String tab_name : tabNames) {
 			actionBar.addTab(actionBar.newTab().setText(tab_name)
 					.setTabListener(this));
-			
-		//Get Values passed in the intent object
-			
+
+			// Get Values passed in the intent object
+
 			Intent intename = getIntent();
-			// Get the Values passed in the intent. Looking for two flags: DEVICE_IS_CHILD and Password_SET
-			password_set = intename.getBooleanExtra(getString(R.string.password_set),false);
-			device_is_child = intename.getBooleanExtra(getString(R.string.device_is_child), false);
-			
-			Log.i(DEBUGTAG, "Password flag passed is " +password_set);
-			Log.i(DEBUGTAG, "Device is child flag passed is " +device_is_child);
-			Log.i(DEBUGTAG, "Intent is  " +getIntent());
-			
+			// Get the Values passed in the intent. Looking for two flags:
+			// DEVICE_IS_CHILD and Password_SET
+			password_set = intename.getBooleanExtra(
+					getString(R.string.password_set), false);
+			device_is_child = intename.getBooleanExtra(
+					getString(R.string.device_is_child), false);
+
+			Log.i(DEBUGTAG, "Password flag passed is " + password_set);
+			Log.i(DEBUGTAG, "Device is child flag passed is " + device_is_child);
+			Log.i(DEBUGTAG, "Intent is  " + getIntent());
+
 		}
 		/*
 		 * Check the shared preference to see if the system is admin or child.
@@ -362,9 +377,9 @@ public class MainActivity extends FragmentActivity implements TabListener,
 			sharedPref = this.getPreferences(Context.MODE_PRIVATE);
 			device_is_child = sharedPref.getBoolean(
 					getString(R.string.device_is_child), false);
-			
+
 			item.setChecked(false);
-			
+
 			if (item.isChecked()) {
 				item.setChecked(true);
 				device_is_child = true;
@@ -374,6 +389,7 @@ public class MainActivity extends FragmentActivity implements TabListener,
 
 				editor.putBoolean(getString(R.string.device_is_child),
 						device_is_child);
+				editor.putBoolean(getString(R.string.segue_from_child), true);
 				editor.commit();
 				Intent i = new Intent(this, ChildActivity.class);
 				startActivity(i);

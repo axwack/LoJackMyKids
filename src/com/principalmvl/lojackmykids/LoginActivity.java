@@ -6,9 +6,11 @@ import java.util.List;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
@@ -33,6 +35,8 @@ import android.widget.TextView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.SignInButton;
+import com.principalmvl.lojackmykids.Interfaces.OnAlertDialogClickListener;
+import com.principalmvl.lojackmykids.fragments.NewPasswordDialog;
 
 /**
  * A login screen that offers login via email/password and via Google+ sign in.
@@ -44,7 +48,7 @@ import com.google.android.gms.common.SignInButton;
  * "Step 1" to create an OAuth 2.0 client for your package.
  */
 public class LoginActivity extends PlusBaseActivity implements
-		LoaderCallbacks<Cursor> {
+		LoaderCallbacks<Cursor>, OnAlertDialogClickListener {
 
 	/**
 	 * A dummy authentication store containing known user names and passwords.
@@ -60,16 +64,22 @@ public class LoginActivity extends PlusBaseActivity implements
 	// UI references.
 	private AutoCompleteTextView mEmailView;
 	private EditText mPasswordView;
+	private Button mLoginButton;
 	private View mProgressView;
 	private View mEmailLoginFormView;
 	private SignInButton mPlusSignInButton;
 	private View mSignOutButtons;
 	private View mLoginFormView;
+
 	private static boolean password_set = false;
 	private static boolean device_is_child = false;
+	private static boolean segue_from_child = false;
 	private static String password = "";
 	private SharedPreferences sharedPref;
 	private String PREFS_NAME = "LJKIDSPrefs";
+	private int mIndex;
+	private static final int PASSWORD_DIALOG_ID = 4;
+	private OnAlertDialogClickListener mListener;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -80,19 +90,50 @@ public class LoginActivity extends PlusBaseActivity implements
 		 * Check preferences to determine if password is on or the device is an
 		 * admin or child
 		 */
-		checkForSharedPrefs();
-
-		if (password_set) {
-			if (!device_is_child) {
-				Intent intent = new Intent(this, LoginActivity.class);
-				startService(intent);
-			} else {
-				// start a new activity for Child only view
-			}
-		}
-
 		// Find the Google+ sign in button.
 		mPlusSignInButton = (SignInButton) findViewById(R.id.plus_sign_in_button);
+		mLoginButton = (Button) findViewById(R.id.login_button);
+
+		// get preferences saved persistently
+		checkForSharedPrefs();
+
+		// Get Intent passed from other screens
+		Intent intename = getIntent();
+		// Get the Values passed in the intent. Looking for two flags:
+		// segue_from_child
+		segue_from_child = intename.getBooleanExtra(
+				getString(R.string.segue_from_child), false); // if it's true
+																// then we have
+																// to not check
+																// from
+																// checksharedPrefs
+		password_set = intename.getBooleanExtra(
+				getString(R.string.password_set), false);
+		device_is_child = intename.getBooleanExtra(
+				getString(R.string.device_is_child), false);
+
+		if (password_set) {
+			setGooglePlusButtonText(mPlusSignInButton,
+					getString(R.string.google_plus_signedin));
+
+			// Change the text if the password is already present
+			mLoginButton.setText("You are already Logged in.");
+
+			if (!device_is_child || segue_from_child) {
+				// If the device is a child and we came from the child activity
+				Intent intent = new Intent(this, MainActivity.class);
+				startActivity(intent);
+			} else if (device_is_child && !segue_from_child) {
+				// start a new activity for Child only view
+				Intent intent = new Intent(this, ChildActivity.class);
+				startActivity(intent);
+			}
+		} else {
+
+			// Change the text if the password is already present
+			mLoginButton.setText("Click to create password.");
+		}
+
 		if (supportsGooglePlayServices()) {
 			// Set a listener to connect the user when the G+ button is clicked.
 			mPlusSignInButton.setOnClickListener(new OnClickListener() {
@@ -128,11 +169,10 @@ public class LoginActivity extends PlusBaseActivity implements
 					}
 				});
 
-		Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-		mEmailSignInButton.setOnClickListener(new OnClickListener() {
+		mLoginButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				attemptLogin();
+				attemptLogin(); //
 			}
 		});
 
@@ -140,6 +180,25 @@ public class LoginActivity extends PlusBaseActivity implements
 		mProgressView = findViewById(R.id.login_progress);
 		mEmailLoginFormView = findViewById(R.id.email_login_form);
 		mSignOutButtons = findViewById(R.id.plus_sign_out_buttons);
+	}
+
+	@Override
+	public void onConnected(Bundle connectionHint) {
+		setGooglePlusButtonText(mPlusSignInButton,
+				getString(R.string.google_plus_signedin));
+		super.onConnected(connectionHint);
+	}
+
+	protected void setGooglePlusButtonText(SignInButton signInButton,
+			String buttonText) {
+		for (int i = 0; i < signInButton.getChildCount(); i++) {
+			View v = signInButton.getChildAt(i);
+			if (v instanceof TextView) {
+				TextView mTextView = (TextView) v;
+				mTextView.setText(buttonText);
+				return;
+			}
+		}
 	}
 
 	@Override
@@ -160,10 +219,9 @@ public class LoginActivity extends PlusBaseActivity implements
 		password_set = sharedPref.getBoolean(getString(R.string.password_set),
 				false);
 		password = sharedPref.getString(getString(R.string.password), "");
+		segue_from_child = sharedPref.getBoolean(
+				getString(R.string.segue_from_child), false);
 
-		if (password_set == false) {
-
-		}
 		Log.i(MainActivity.DEBUGTAG,
 				"[LOGIN ACTIVITY] Current Prefs: The password setting is "
 						+ password_set);
@@ -220,6 +278,10 @@ public class LoginActivity extends PlusBaseActivity implements
 			cancel = true;
 		}
 
+		if (!password_set) {
+			this.showDialog();
+		}
+
 		if (cancel) {
 			// There was an error; don't attempt login and focus the first
 			// form field with an error.
@@ -231,6 +293,32 @@ public class LoginActivity extends PlusBaseActivity implements
 			mAuthTask = new UserLoginTask(email, password);
 			mAuthTask.execute((Void) null);
 		}
+	}
+
+
+	private void showDialog() {
+		NewPasswordDialog alert = new NewPasswordDialog();
+	}
+
+	private void setPassword(String password) {
+		password_set = true;
+		sharedPref = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+		SharedPreferences.Editor prefsEditor = sharedPref.edit();
+		prefsEditor.putBoolean(getString(R.string.password_set), password_set);
+		// prefsEditor.putString(getString(R.string.password),
+		// password1.getText()
+		// .toString());
+		prefsEditor.commit();
+
+		password_set = sharedPref.getBoolean(getString(R.string.password_set),
+				false);
+		/*
+		 * Log.i(MainActivity.DEBUGTAG, "Value of Password: " +
+		 * mPasswordView.getText().toString()); Log.i(MainActivity.DEBUGTAG,
+		 * "Value of Password_set: " + password_set);
+		 * Log.i(MainActivity.DEBUGTAG, "Value of Saved Password: " + password);
+		 */
+
 	}
 
 	private boolean isEmailValid(String email) {
@@ -430,24 +518,31 @@ public class LoginActivity extends PlusBaseActivity implements
 		@Override
 		protected void onPostExecute(final Boolean success) {
 			mAuthTask = null;
-			Intent intObj;
+			Intent intObj = null;
 			showProgress(false);
 
 			if (success) {
-
 				if (!password_set) {
 					// finish();
-					intObj = new Intent(LoginActivity.this,
-							PasswordActivity.class);
-				} else if (password_set && !device_is_child){
-					intObj = new Intent(LoginActivity.this,
-							MainActivity.class);
-				} else if (password_set && device_is_child){
-					intObj = new Intent(LoginActivity.this,
-							ChildActivity.class);
+					// TODO: Do I have to do a showDialogPassword()? If so, call
+					// it.
+					intObj = new Intent(LoginActivity.this, MainActivity.class);
+					Log.i(MainActivity.DEBUGTAG,
+							"[LOGINACTIVITY] => Main Activity...");
+					Log.i(MainActivity.DEBUGTAG,
+							"[LOGINACTIVITY] => Password Dialog...");
+				} else if (password_set && !device_is_child) {
+					intObj = new Intent(LoginActivity.this, MainActivity.class);
+					Log.i(MainActivity.DEBUGTAG,
+							"[LOGINACTIVITY] => Main Activity...");
+				} else if (password_set && device_is_child) {
+					Log.i(MainActivity.DEBUGTAG,
+							"[LOGINACTIVITY] => Child Activity...");
+					intObj = new Intent(LoginActivity.this, ChildActivity.class);
 				} else {
-					intObj = new Intent(LoginActivity.this,
-							MainActivity.class);
+					Log.i(MainActivity.DEBUGTAG,
+							"[LOGINACTIVITY] => Main Activity...");
+					intObj = new Intent(LoginActivity.this, MainActivity.class);
 				}
 				/*
 				 * Set the password_set flag..need to pass Is child Flag
@@ -469,5 +564,23 @@ public class LoginActivity extends PlusBaseActivity implements
 			mAuthTask = null;
 			showProgress(false);
 		}
+	}
+
+	@Override
+	public void onPositiveClick(DialogInterface dialog, int id) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onNegativeClick(DialogInterface dialog, int id) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onNeutralClick(DialogInterface dialog, int id) {
+		// TODO Auto-generated method stub
+
 	}
 }

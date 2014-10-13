@@ -10,8 +10,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,12 +22,13 @@ public class PasswordActivity extends Activity {
 	/*
 	 * Set the password dialog to identify it. This has to be unique
 	 */
-	private static final int PASSWORD_DIALOG_ID = 4;
+
 	private EditText password1, password2;
 	private TextView error;
 	private SharedPreferences sharedPref;
 	private String PREFS_NAME = "LJKIDSPrefs";
 	private Boolean password_set, device_is_child;
+	private static final int PASSWORD_DIALOG_ID = 4;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -54,41 +56,44 @@ public class PasswordActivity extends Activity {
 				// TODO: Create Child Intent and Activity
 			}
 		} else {
-			password1 = (EditText) findViewById(R.id.EditText_Pwd1);
+
+/*			password1 = (EditText) findViewById(R.id.EditText_Pwd1);
 			password2 = (EditText) findViewById(R.id.EditText_Pwd2);
-			error = (TextView) findViewById(R.id.TextView_PwdProblem);			
+			error = (TextView) findViewById(R.id.TextView_PwdProblem);*/
 		}
 	}
-	
-	private void setPassword(String password){
+
+	private void setPassword(String password) {
 		password_set = true;
-		sharedPref = getSharedPreferences(PREFS_NAME,
-				Context.MODE_PRIVATE);
+		sharedPref = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 		SharedPreferences.Editor prefsEditor = sharedPref.edit();
-		prefsEditor.putBoolean(getString(R.string.password_set),
-				password_set);
-		prefsEditor.putString(getString(R.string.password), password1.getText().toString());
+		prefsEditor.putBoolean(getString(R.string.password_set), password_set);
+		prefsEditor.putString(getString(R.string.password), password1.getText()
+				.toString());
 		prefsEditor.commit();
 
-		password_set = sharedPref.getBoolean(
-				getString(R.string.password_set), false);
-		/*Log.i(MainActivity.DEBUGTAG, "Value of Password: "
-				+ mPasswordView.getText().toString());
-		Log.i(MainActivity.DEBUGTAG, "Value of Password_set: "
-				+ password_set);
-		Log.i(MainActivity.DEBUGTAG, "Value of Saved Password: "
-				+ password);*/
+		password_set = sharedPref.getBoolean(getString(R.string.password_set),
+				false);
+		/*
+		 * Log.i(MainActivity.DEBUGTAG, "Value of Password: " +
+		 * mPasswordView.getText().toString()); Log.i(MainActivity.DEBUGTAG,
+		 * "Value of Password_set: " + password_set);
+		 * Log.i(MainActivity.DEBUGTAG, "Value of Saved Password: " + password);
+		 */
 
 	}
-	
-		@Override
+
+	@Override
 	protected Dialog onCreateDialog(int id) {
 
 		switch (id) {
 		case PASSWORD_DIALOG_ID:
 			LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-			// TODO: Create Dialog here and return it (see subsequent steps)
+			final View layout = inflater.inflate(R.layout.activity_password,
+					(ViewGroup) findViewById(R.id.root));
+			password1 = (EditText) findViewById(R.id.EditText_Pwd1);
+			password2 = (EditText) findViewById(R.id.EditText_Pwd2);
+			error = (TextView) findViewById(R.id.TextView_PwdProblem);
 
 			password2.addTextChangedListener(new TextWatcher() {
 
@@ -111,9 +116,8 @@ public class PasswordActivity extends Activity {
 					}
 				}
 			});
+			
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("Enter Password");
-			// builder.setView(layout);
 
 			builder.setNegativeButton(android.R.string.cancel,
 					new DialogInterface.OnClickListener() {
@@ -139,6 +143,10 @@ public class PasswordActivity extends Activity {
 							removeDialog(PASSWORD_DIALOG_ID);
 						}
 					});
+			
+
+			builder.setTitle("Enter Password");
+			builder.setView(layout);
 			AlertDialog passwordDialog = builder.create();
 			return passwordDialog;
 		}

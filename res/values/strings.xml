@@ -34,5 +34,7 @@
     <string name="title_activity_child">Lo Jack My Kids -  Child</string>
     <string name="child_layout_background">Child Layout Background</string>
     <string name="password">PASSWORD</string>
+    <string name="google_plus_signedin">Logged In</string>
+    <string name="segue_from_child">false</string>
 
 </resources>
