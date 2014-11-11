@@ -3,22 +3,23 @@ package com.principalmvl.lojackmykids;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.principalmvl.lojackmykids.listeners.PointCollectorListener;
-
 import android.graphics.Point;
+import android.location.Location;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
+
+import com.principalmvl.lojackmykids.listeners.PointCollectorListener;
 
 public class PointCollector implements OnTouchListener {
 
 	private PointCollectorListener listener;
 	private List<Point> points = new ArrayList<Point>();
+	private Location location;
 	
 	public PointCollector() {
-		// TODO Auto-generated constructor stub
 	}
-
+	
 	public PointCollectorListener getListener() {
 		return listener;
 	}
@@ -29,13 +30,27 @@ public class PointCollector implements OnTouchListener {
 
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
-		// TODO Auto-generated method stub
 		
-		if(listener != null){
-			listener.pointsCollected(points);
-		}
+		int x = Math.round(event.getX());
+		int y = Math.round(event.getY());
+		
+		points.add(new Point(x,y));
+		
+		if (points.size()==4){
+			if(listener != null){
+				//listener.pointsCollected(points); //This is set on the Child Activity. May need to change on the Child Activity
+				listener.onLocationChanged(location); //we need to pass a loction to this
+			}
+		}	
 		return false;
 	}
 
+	public Location getLocation() {
+		return location;
+	}
 
+	public void setLocation(Location location) {
+		this.location = location;
+	}
+	
 }

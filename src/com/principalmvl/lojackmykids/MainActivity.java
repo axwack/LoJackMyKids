@@ -9,11 +9,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.ActionBar.TabListener;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.FragmentTransaction;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
@@ -23,16 +20,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -55,18 +45,13 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	public static final String EXTRA_MESSAGE = "message";
 	public static final String PROPERTY_REG_ID = "22298386436";
 	private static final String PROPERTY_APP_VERSION = "appVersion";
-
-
-
 	private ViewPager viewPager;
 	private TabsPagerAdapter mAdapter;
 	private ActionBar actionBar;
 	private SharedPreferences sharedPref;
 	boolean device_is_child, password_set;
 	public final static String PREFS_NAME = "LJKIDSPrefs";
-	// Global variable to hold the current location
-	// private Location mCurrentLocation;
-	// private LocationClient mLocationClient;
+
 	private String[] tabNames = { "Map", "Reporting" };
 	/**
 	 * Substitute you own sender ID here. This is the project number you got
@@ -104,10 +89,12 @@ public class MainActivity extends FragmentActivity implements TabListener,
 			// Get Values passed in the intent object
 
 			Intent intename = getIntent();
+			
 			// Get the Values passed in the intent. Looking for two flags:
 			// DEVICE_IS_CHILD and Password_SET
 			password_set = intename.getBooleanExtra(
 					getString(R.string.password_set), false);
+			
 			device_is_child = intename.getBooleanExtra(
 					getString(R.string.device_is_child), false);
 
@@ -389,9 +376,13 @@ public class MainActivity extends FragmentActivity implements TabListener,
 
 				editor.putBoolean(getString(R.string.device_is_child),
 						device_is_child);
+				Log.i(MainActivity.DEBUGTAG, "[MainActivity] Device is child "+ device_is_child);
+				Log.i(MainActivity.DEBUGTAG, "Setting Device is child to Shared Preferences");
 				editor.putBoolean(getString(R.string.segue_from_child), true);
+				editor.putBoolean(getString(R.string.password_set), true);
 				editor.commit();
 				Intent i = new Intent(this, ChildActivity.class);
+				Log.i(MainActivity.DEBUGTAG, "MAINACTIVITY => CHILDACTIVITY");
 				startActivity(i);
 			} else
 				item.setChecked(true);
@@ -406,12 +397,6 @@ public class MainActivity extends FragmentActivity implements TabListener,
 		Log.i(DEBUGTAG, "Returned from Known Locations...");
 	}
 
-	/*
-	 * private void addTouchListener() { ImageView placeholder = (ImageView)
-	 * findViewById(R.id.action_bar);
-	 * placeholder.setOnTouchListener(this.pointCollector); }
-	 */
-
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode,
 			Intent intent) {
@@ -425,11 +410,6 @@ public class MainActivity extends FragmentActivity implements TabListener,
 		super.onActivityResult(resultCode, requestCode, intent);
 	}
 
-	/*
-	 * @Override public void pointsCollected(List<Point> points) { // TODO
-	 * Auto-generated method stub Log.d(MainActivity.DEBUGTAG,
-	 * "In the Listener Interface Method"); }
-	 */
 	@Override
 	public void onTabReselected(Tab tab, FragmentTransaction ft) {
 		// TODO Auto-generated method stub

@@ -12,6 +12,8 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -123,7 +125,7 @@ public class KnownLocationsActivity extends Activity implements
 		Log.i(MainActivity.DEBUGTAG, "Observer Negative Click");
 		dialog.dismiss();
 	}
-	
+
 	private void setUpMapIfNeeded() {
 		// Do a null check to confirm that we have not already
 		// instantiated
@@ -137,7 +139,7 @@ public class KnownLocationsActivity extends Activity implements
 				// The Map is verified. It is now safe to manipulate the
 				// map.
 				map.setMyLocationEnabled(true);
-			
+
 			}
 		}
 	}
@@ -188,7 +190,14 @@ public class KnownLocationsActivity extends Activity implements
 					// Getting user input location
 					// String location = edit_text.getText().toString();
 
-					String location = "97 Lincoln Ave. Cliffside Park, nj";
+					String location = "97 Lincoln Ave. Cliffside Park, nj"; // TODO:
+																			// Change
+																			// the
+																			// location
+																			// by
+																			// erasing
+																			// this
+																			// line
 					if (location != null && !location.equals("")) {
 						new GeocoderTask().execute(location);
 
@@ -196,7 +205,7 @@ public class KnownLocationsActivity extends Activity implements
 				}
 			});
 		}
-		
+
 		// An AsyncTask class for accessing the GeoCoding Web Service
 		public class GeocoderTask extends
 				AsyncTask<String, Void, List<Address>> {
@@ -255,13 +264,13 @@ public class KnownLocationsActivity extends Activity implements
 
 					Log.i(MainActivity.DEBUGTAG, "Adding Marker...");
 					map.addMarker(markerOptions);
-	
+
 				}
 				// Locate the first location
 
 				map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,
 						GeocoderTask.zoomLevel));
-				
+
 				try {
 					this.get(10000, TimeUnit.MILLISECONDS);
 				} catch (InterruptedException e) {
@@ -274,8 +283,8 @@ public class KnownLocationsActivity extends Activity implements
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				
-				callBackFromAddressFind(address); 
+
+				callBackFromAddressFind(address);
 				/*
 				 * map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng ,
 				 * this.zoomLevel), new CancelableCallback() {
@@ -292,7 +301,7 @@ public class KnownLocationsActivity extends Activity implements
 				 */
 				Log.i(MainActivity.DEBUGTAG, "Zooming to " + zoomLevel);
 			}
-			
+
 			private void setUpMapIfNeeded() {
 				// Do a null check to confirm that we have not already
 				// instantiated
@@ -306,13 +315,11 @@ public class KnownLocationsActivity extends Activity implements
 						// The Map is verified. It is now safe to manipulate the
 						// map.
 						map.setMyLocationEnabled(true);
-					
+
 					}
 				}
 			}
 
 		}
 	}
-
-
 }

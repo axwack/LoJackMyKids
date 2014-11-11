@@ -13,21 +13,21 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.principalmvl.lojackmykids.CurrentLocation;
+import com.principalmvl.lojackmykids.CurrentLocation.LocationResult;
 import com.principalmvl.lojackmykids.MainActivity;
-import com.principalmvl.lojackmykids.MyLocation;
-import com.principalmvl.lojackmykids.MyLocation.LocationResult;
 import com.principalmvl.lojackmykids.R;
 
 public class MapViewFragment extends Fragment {
 	GoogleMap map;
 	LatLng latLng;
-	
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.map_view_fragment, container, false);
 		// Gets the MapView from the XML layout and creates it
-		
+
 		this.setUpMapIfNeeded();
 		// Gets to GoogleMap from the MapView and does initialization stuff
 		// map = mapView.getMap();
@@ -44,41 +44,41 @@ public class MapViewFragment extends Fragment {
 				Log.v(MainActivity.DEBUGTAG, lat);
 				// Creating a LatLng object for the current location
 				// Getting latitude of the current location
-			    double latitude = location.getLatitude();
+				double latitude = location.getLatitude();
 
-			    // Getting longitude of the current location
-			    double longitude = location.getLongitude();
-				
+				// Getting longitude of the current location
+				double longitude = location.getLongitude();
+
 				latLng = new LatLng(latitude, longitude);
 
 				// Showing the current location in Google Map
-				map.animateCamera(CameraUpdateFactory.newCameraPosition(
-				           new CameraPosition.Builder().target(new LatLng(latitude, longitude))
-				        .zoom(15.5f)
-				        .bearing(0)
-				        .tilt(25)
-				        .build()
-				), new GoogleMap.CancelableCallback() {
-				    @Override
-				    public void onFinish() {
-				        // Your code here to do something after the Map is rendered
-				    }
+				map.animateCamera(CameraUpdateFactory
+						.newCameraPosition(new CameraPosition.Builder()
+								.target(new LatLng(latitude, longitude))
+								.zoom(15.5f).bearing(0).tilt(25).build()),
+						new GoogleMap.CancelableCallback() {
+							@Override
+							public void onFinish() {
+								// Your code here to do something after the Map
+								// is rendered
+							}
 
-				    @Override
-				    public void onCancel() {
-				        // Your code here to do something after the Map rendering is cancelled
-				    }
-				});
-				
-			    //map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-		 
-			    // Zoom in the Google Map
-			    //map.animateCamera(CameraUpdateFactory.zoomTo(15));
+							@Override
+							public void onCancel() {
+								// Your code here to do something after the Map
+								// rendering is cancelled
+							}
+						});
+
+				// map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+
+				// Zoom in the Google Map
+				// map.animateCamera(CameraUpdateFactory.zoomTo(15));
 			}
 		};
-		MyLocation myLocation = new MyLocation();
+		// MyLocation myLocation = new MyLocation();
+		CurrentLocation myLocation = new CurrentLocation();
 		myLocation.getLocation(getActivity(), locationResult);
-
 		return v;
 	}
 
@@ -101,17 +101,19 @@ public class MapViewFragment extends Fragment {
 	 * map.animateCamera(cameraUpdate);
 	 */
 	private void setUpMapIfNeeded() {
-	    // Do a null check to confirm that we have not already instantiated the map.
-	    if (map == null) {
-	        map = ((SupportMapFragment) getFragmentManager().findFragmentById(R.id.map))
-	                            .getMap();
-	        // Check if we were successful in obtaining the map.
-	        if (map != null) {
-	            // The Map is verified. It is now safe to manipulate the map.
-	        	map.setMyLocationEnabled(true);
-	        }
-	    }
+		// Do a null check to confirm that we have not already instantiated the
+		// map.
+		if (map == null) {
+			map = ((SupportMapFragment) getFragmentManager().findFragmentById(
+					R.id.map)).getMap();
+			// Check if we were successful in obtaining the map.
+			if (map != null) {
+				// The Map is verified. It is now safe to manipulate the map.
+				map.setMyLocationEnabled(true);
+			}
+		}
 	}
+
 	@Override
 	public void onDestroyView() {
 		// TODO Auto-generated method stub
