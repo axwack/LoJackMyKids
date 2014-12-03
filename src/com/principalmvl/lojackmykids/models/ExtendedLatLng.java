@@ -1,10 +1,16 @@
 package com.principalmvl.lojackmykids.models;
 
+import java.io.Serializable;
+
 import com.google.android.gms.maps.model.LatLng;
 
-public class ExtendedLatLng {
+public class ExtendedLatLng implements Serializable {
 	
-	private Double lat, lng, distance;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private Double lat, lng;
 
 	public double getLat() {
 		return lat;

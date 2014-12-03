@@ -27,9 +27,9 @@ public class DataProvider extends ContentProvider {
 	public static final String COL_COUNT = "count";
 
 	public static final Uri CONTENT_URI_MESSAGES = Uri
-			.parse("content://com.principalmvl.instachat.provider/messages");
+			.parse("content://com.principalmvl.lojackmykids.provider/messages");
 	public static final Uri CONTENT_URI_PROFILE = Uri
-			.parse("content://com.principalmvl.instachat.provider/profile");
+			.parse("content://com.principalmvl.lojackmykids.provider/profile");
 
 	private static final int MESSAGES_ALLROWS = 1;
 	private static final int MESSAGES_SINGLE_ROW = 2;
@@ -40,13 +40,13 @@ public class DataProvider extends ContentProvider {
 
 	static {
 		uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-		uriMatcher.addURI("com.principalmvl.instachat.provider", "messages",
+		uriMatcher.addURI("com.principalmvl.lojackmykids.provider", "messages",
 				MESSAGES_ALLROWS);
-		uriMatcher.addURI("com.principalmvl.instachat.provider", "messages/#",
+		uriMatcher.addURI("com.principalmvl.lojackmykids.provider", "messages/#",
 				MESSAGES_SINGLE_ROW);
-		uriMatcher.addURI("com.principalmvl.instachat.provider", "profile",
+		uriMatcher.addURI("com.principalmvl.lojackmykids.provider", "profile",
 				PROFILE_ALLROWS);
-		uriMatcher.addURI("com.principalmvl.instachat.provider", "profile/#",
+		uriMatcher.addURI("com.principalmvl.lojackmykids.provider", "profile/#",
 				PROFILE_SINGLE_ROW);
 	}
 

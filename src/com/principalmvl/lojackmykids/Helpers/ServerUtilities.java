@@ -21,21 +21,22 @@ import static com.principalmvl.lojackmykids.Helpers.CommonUtilities.displayMessa
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
 
 import android.content.Context;
 import android.util.Log;
@@ -48,166 +49,232 @@ import com.principalmvl.lojackmykids.R;
  */
 public final class ServerUtilities {
 
-    private static final int MAX_ATTEMPTS = 5;
-    private static final int BACKOFF_MILLI_SECONDS = 2000;
-    private static final Random random = new Random();
+	private static final int MAX_ATTEMPTS = 5;
+	private static final int BACKOFF_MILLI_SECONDS = 2000;
+	private static final Random random = new Random();
 
-    /**
-     * Register this account/device pair within the server.
-     *
-     */
-  public static void register(final Context context, final String regId) throws UnsupportedEncodingException {
-        Log.i(MainActivity.DEBUGTAG, "registering device (regId = " + regId + ")");
-        String serverUrl = SERVER_URL + "/register";
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("regId", regId);
-        long backoff = BACKOFF_MILLI_SECONDS + random.nextInt(1000);
-        // Once GCM returns a registration id, we need to register it in the
-        // demo server. As the server might be down, we will retry it a couple
-        // times.
-        for (int i = 1; i <= MAX_ATTEMPTS; i++) {
-            Log.d(TAG, "Attempt #" + i + " to register");
-            try {
-                displayMessage(context, context.getString(
-                        R.string.server_registering, i, MAX_ATTEMPTS));
-                post(serverUrl, params);
-                //GCMRegistrar.setRegisteredOnServer(context, true);
-                String message = context.getString(R.string.server_registered);
-                CommonUtilities.displayMessage(context, message);
-                return;
-            } catch (IOException e) {
-                // Here we are simplifying and retrying on any error; in a real
-                // application, it should retry only on unrecoverable errors
-                // (like HTTP error code 503).
-                Log.e(MainActivity.DEBUGTAG, "Failed to register on attempt " + i + ":" + e);
-                if (i == MAX_ATTEMPTS) {
-                    break;
-                }
-                try {
-                    Log.d(MainActivity.DEBUGTAG, "Sleeping for " + backoff + " ms before retry");
-                    Thread.sleep(backoff);
-                } catch (InterruptedException e1) {
-                    // Activity finished before we complete - exit.
-                    Log.d(MainActivity.DEBUGTAG, "Thread interrupted: abort remaining retries!");
-                    Thread.currentThread().interrupt();
-                    return;
-                }
-                // increase backoff exponentially
-                backoff *= 2;         
-            }
-        }
-        String message = context.getString(R.string.server_register_error,
-                MAX_ATTEMPTS);
-        CommonUtilities.displayMessage(context, message);
-    }
-
-    /**
-     * Unregister this account/device pair within the server.
-     */
-    public static void unregister(final Context context, final String regId) {
-        Log.i(MainActivity.DEBUGTAG, "unregistering device (regId = " + regId + ")");
-        String serverUrl = SERVER_URL + "/unregister";
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("regId", regId);
-        try {
-            post(serverUrl, params);
-            //GCMRegistrar.setRegisteredOnServer(context, false);
-            String message = context.getString(R.string.server_unregistered);
-            CommonUtilities.displayMessage(context, message);
-        } catch (IOException e) {
-            // At this point the device is unregistered from GCM, but still
-            // registered in the server.
-            // We could try to unregister again, but it is not necessary:
-            // if the server tries to send a message to the device, it will get
-            // a "NotRegistered" error message and should unregister the device.
-            String message = context.getString(R.string.server_unregister_error,
-                    e.getMessage());
-            CommonUtilities.displayMessage(context, message);
-        }
-    }
-
-    
-  
-    /**
-     * Issue a POST request to the server.
-     *
-     * @param endpoint POST address.
-     * @param params request parameters.
-     * @throws IOException propagated from POST.
-     */
-    /*
-      private static void post(String endpoint, Map<String, String> params)
-            throws IOException {
-        URL url;
-        try {
-            url = new URL(endpoint);
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("invalid url: " + endpoint);
-        }
-        StringBuilder bodyBuilder = new StringBuilder();
-        Iterator<Entry<String, String>> iterator = params.entrySet().iterator();
-        // constructs the POST body using the parameters
-        while (iterator.hasNext()) {
-            Entry<String, String> param = iterator.next();
-            bodyBuilder.append(param.getKey()).append('=')
-                    .append(param.getValue());
-            if (iterator.hasNext()) {
-                bodyBuilder.append('&');
-            }
-        }
-        String body = bodyBuilder.toString();
-        Log.v(MainActivity.DEBUGTAG, "Posting '" + body + "' to " + url);
-        byte[] bytes = body.getBytes();
-        HttpURLConnection conn = null;
-        try {
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setDoOutput(true);
-            conn.setUseCaches(false);
-            conn.setFixedLengthStreamingMode(bytes.length);
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type",
-                    "application/x-www-form-urlencoded;charset=UTF-8");
-            conn.setRequestProperty("Authorization","key="+CommonUtilities.AP_KEY);
-            // post the request
-            OutputStream out = conn.getOutputStream();
-            out.write(bytes);
-            out.close();
-            
-            
-            // handle the response
-            int status = conn.getResponseCode();
-            if (status != 200) {
-              throw new IOException("Post failed with error code " + status);
-            }
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
-        }
-      }
-  */
-    private static void post (String endpoint, Map<String, String> params) throws IOException{
-    	 HttpClient client = new DefaultHttpClient();
-    	    HttpPost post = new HttpPost(endpoint);
-    	    Log.i(MainActivity.DEBUGTAG, "URL: "+endpoint);
-    	      
-    	    List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-    	      
-    	      nameValuePairs.add(new BasicNameValuePair("regId",
-    	         params.get("regId") ));
-    	      
-    	      post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-    	      
-    	      Log.i(MainActivity.DEBUGTAG, "Params: "+params.get("regId"));
-    	      
-    	      HttpResponse response = client.execute(post);	    
-    	      
-    	      BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-    	      String line = "";
-    	      while ((line = rd.readLine()) != null) {
-    	        System.out.println(line);
-    	        Log.i(MainActivity.DEBUGTAG, line);
-    	      }      
+	/**
+	 * Register this account/device pair within the server.
+	 *
+	 */
+	public static void register(final Context context, final String regId)
+			throws UnsupportedEncodingException {
+		Log.i(MainActivity.DEBUGTAG, "registering device (regId = " + regId
+				+ ")");
+		String serverUrl = SERVER_URL + "/register";
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("regId", regId);
+		long backoff = BACKOFF_MILLI_SECONDS + random.nextInt(1000);
+		// Once GCM returns a registration id, we need to register it in the
+		// demo server. As the server might be down, we will retry it a couple
+		// times.
+		for (int i = 1; i <= MAX_ATTEMPTS; i++) {
+			Log.d(TAG, "Attempt #" + i + " to register");
+			try {
+				displayMessage(context, context.getString(
+						R.string.server_registering, i, MAX_ATTEMPTS));
+				post(serverUrl, params, 100);
+				// GCMRegistrar.setRegisteredOnServer(context, true);
+				String message = context.getString(R.string.server_registered);
+				CommonUtilities.displayMessage(context, message);
+				return;
+			} catch (IOException e) {
+				// Here we are simplifying and retrying on any error; in a real
+				// application, it should retry only on unrecoverable errors
+				// (like HTTP error code 503).
+				Log.e(MainActivity.DEBUGTAG, "Failed to register on attempt "
+						+ i + ":" + e);
+				if (i == MAX_ATTEMPTS) {
+					break;
+				}
+				try {
+					Log.d(MainActivity.DEBUGTAG, "Sleeping for " + backoff
+							+ " ms before retry");
+					Thread.sleep(backoff);
+				} catch (InterruptedException e1) {
+					// Activity finished before we complete - exit.
+					Log.d(MainActivity.DEBUGTAG,
+							"Thread interrupted: abort remaining retries!");
+					Thread.currentThread().interrupt();
+					return;
+				}
+				// increase backoff exponentially
+				backoff *= 2;
 			}
+		}
+		String message = context.getString(R.string.server_register_error,
+				MAX_ATTEMPTS);
+		CommonUtilities.displayMessage(context, message);
+	}
+
+	/**
+	 * Unregister this account/device pair within the server.
+	 */
+	public static void unregister(final Context context, final String regId) {
+		Log.i(MainActivity.DEBUGTAG, "unregistering device (regId = " + regId
+				+ ")");
+		String serverUrl = SERVER_URL + "/unregister";
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("regId", regId);
+		try {
+			post(serverUrl, params, 100);
+			// GCMRegistrar.setRegisteredOnServer(context, false);
+			String message = context.getString(R.string.server_unregistered);
+			CommonUtilities.displayMessage(context, message);
+		} catch (IOException e) {
+			// At this point the device is unregistered from GCM, but still
+			// registered in the server.
+			// We could try to unregister again, but it is not necessary:
+			// if the server tries to send a message to the device, it will get
+			// a "NotRegistered" error message and should unregister the device.
+			String message = context.getString(
+					R.string.server_unregister_error, e.getMessage());
+			CommonUtilities.displayMessage(context, message);
+		}
+	}
+
+	/**
+	 * Send a message.
+	 */
+	public static String send(String url, Object jsonObject) throws IOException {
+
+		return post(url, jsonObject, MAX_ATTEMPTS);
+	}
+
+	/**
+	 * Issue a POST request to the server.
+	 *
+	 * @param endpoint
+	 *            POST address.
+	 * @param params
+	 *            request parameters.
+	 * @return response
+	 * @throws IOException
+	 *             propagated from POST.
+	 */
+	private static String executePost(String endpoint, Object params)
+			throws IOException {
 		
+		
+		InputStream inputStream = null;
+		String result = "";
+		try {
+			URL url = new URL(endpoint);
+		} catch (MalformedURLException e) {
+			throw new IllegalArgumentException("invalid url: " + endpoint);
+		}
+		try {
+			// 1. create HttpClient
+			HttpClient httpclient = new DefaultHttpClient();
+
+			// 2. make POST request to the given URL
+			HttpPost httpPost = new HttpPost(endpoint);
+
+			String json = "";
+
+			// 3. build jsonObject but don't need here
+
+			// 4. convert JSONObject to JSON to String
+			json = params.toString();
+
+			// ** Alternative way to convert Person object to JSON string usin
+			// Jackson Lib
+			// ObjectMapper mapper = new ObjectMapper();
+			// json = mapper.writeValueAsString(person);
+
+			// 5. set json to StringEntity
+			StringEntity se = new StringEntity(json);
+
+			// 6. set httpPost Entity
+			httpPost.setEntity(se);
+
+			// 7. Set some headers to inform server about the type of the
+			// content
+			httpPost.setHeader("Accept", "application/json");
+			httpPost.setHeader("Content-type", "application/json");
+
+			
+			// 8. Execute POST request to the given URL
+			HttpResponse httpResponse = httpclient.execute(httpPost);
+
+			// 9. receive response as inputStream
+			inputStream = httpResponse.getEntity().getContent();
+
+			// 10. convert inputstream to string
+			if (inputStream != null)
+				result = convertInputStreamToString(inputStream);
+			else
+				result = "Did not work!";
+
+		} catch (Exception e) {
+            Log.d("InputStream", e.getLocalizedMessage());
+        }
+        // 11. return result
+        return result;
+	}
+	 private static String convertInputStreamToString(InputStream inputStream) throws IOException{
+	        BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
+	        String line = "";
+	        String result = "";
+	        while((line = bufferedReader.readLine()) != null)
+	            result += line;
+	 
+	        inputStream.close();
+	        return result;
+	 
+	    }   
+
+	/** Issue a POST with exponential backoff */
+	private static String post(String endpoint, Map<String, String> params,
+			int maxAttempts) throws IOException {
+		long backoff = BACKOFF_MILLI_SECONDS + random.nextInt(1000);
+		for (int i = 1; i <= maxAttempts; i++) {
+			Log.d(TAG, "Attempt #" + i + " to connect");
+			try {
+				return executePost(endpoint, params);
+			} catch (IOException e) {
+				Log.e(TAG, "Failed on attempt " + i + ":" + e);
+				if (i == maxAttempts) {
+					throw e;
+				}
+				try {
+					Thread.sleep(backoff);
+				} catch (InterruptedException e1) {
+					Thread.currentThread().interrupt();
+					return null;
+				}
+				backoff *= 2;
+			} catch (IllegalArgumentException e) {
+				throw new IOException(e.getMessage(), e);
+			}
+		}
+		return null;
+	}
+
+	/** Issue a POST with exponential backoff */
+	private static String post(String endpoint, Object params, int maxAttempts)
+			throws IOException {
+		long backoff = BACKOFF_MILLI_SECONDS + random.nextInt(1000);
+		for (int i = 1; i <= maxAttempts; i++) {
+			Log.d(TAG, "Attempt #" + i + " to connect");
+			try {
+				return executePost(endpoint, params);
+			} catch (IOException e) {
+				Log.e(TAG, "Failed on attempt " + i + ":" + e);
+				if (i == maxAttempts) {
+					throw e;
+				}
+				try {
+					Thread.sleep(backoff);
+				} catch (InterruptedException e1) {
+					Thread.currentThread().interrupt();
+					return null;
+				}
+				backoff *= 2;
+			} catch (IllegalArgumentException e) {
+				throw new IOException(e.getMessage(), e);
+			}
+		}
+		return null;
+	}
 }

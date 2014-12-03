@@ -10,6 +10,7 @@ import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.ActionBar.TabListener;
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -31,6 +32,7 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.principalmvl.lojackmykids.Adapters.TabsPagerAdapter;
 import com.principalmvl.lojackmykids.Helpers.ServerUtilities;
+import com.principalmvl.lojackmykids.Helpers.Wakelocker;
 
 public class MainActivity extends FragmentActivity implements TabListener,
 		GooglePlayServicesClient.ConnectionCallbacks,
@@ -89,12 +91,12 @@ public class MainActivity extends FragmentActivity implements TabListener,
 			// Get Values passed in the intent object
 
 			Intent intename = getIntent();
-			
+
 			// Get the Values passed in the intent. Looking for two flags:
 			// DEVICE_IS_CHILD and Password_SET
 			password_set = intename.getBooleanExtra(
 					getString(R.string.password_set), false);
-			
+
 			device_is_child = intename.getBooleanExtra(
 					getString(R.string.device_is_child), false);
 
@@ -139,15 +141,38 @@ public class MainActivity extends FragmentActivity implements TabListener,
 		if (checkPlayServices()) {
 			// gcm = GoogleCloudMessaging.getInstance(this);
 			regId = getRegistrationId(context);
-
-			// if (regId.isEmpty()) {
+		}
+		if (regId.isEmpty()) {
 			registerInBackground();
-			// }
-
 		} else {
 			Log.i(DEBUGTAG, "No valid Google Play Services APK found.");
 		}
 	}
+
+	/**
+	 * Receiving push messages
+	 * */
+	private final BroadcastReceiver mHandleMessageReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String newMessage = intent.getExtras().getString(EXTRA_MESSAGE);
+			// Waking up mobile if it is sleeping
+			Wakelocker.acquire(getApplicationContext());
+
+			/**
+			 * Take appropriate action on this message depending upon your app
+			 * requirement For now i am just displaying it on the screen
+			 * */
+
+			// Showing received message
+			// lblMessage.append(newMessage + "\n");
+			Toast.makeText(getApplicationContext(),
+					"New Message: " + newMessage, Toast.LENGTH_LONG).show();
+
+			// Releasing wake lock
+			Wakelocker.release();
+		}
+	};
 
 	@Override
 	protected void onStart() {
@@ -376,8 +401,10 @@ public class MainActivity extends FragmentActivity implements TabListener,
 
 				editor.putBoolean(getString(R.string.device_is_child),
 						device_is_child);
-				Log.i(MainActivity.DEBUGTAG, "[MainActivity] Device is child "+ device_is_child);
-				Log.i(MainActivity.DEBUGTAG, "Setting Device is child to Shared Preferences");
+				Log.i(MainActivity.DEBUGTAG, "[MainActivity] Device is child "
+						+ device_is_child);
+				Log.i(MainActivity.DEBUGTAG,
+						"Setting Device is child to Shared Preferences");
 				editor.putBoolean(getString(R.string.segue_from_child), true);
 				editor.putBoolean(getString(R.string.password_set), true);
 				editor.commit();

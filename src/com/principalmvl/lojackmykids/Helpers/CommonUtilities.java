@@ -29,12 +29,13 @@ public final class CommonUtilities {
      */
 	
 	//TODO: Change the IP of the Server for Debugging and Testing
-	public static final String SERVER_IP_NAME = "192.168.0.44";
+	//public static final String SERVER_IP_NAME = "192.168.0.44";
+	public static final String SERVER_IP_NAME = "metal-complex-658.appspot.com/";
     /**
      * Base URL of the Demo Server (such as http://my_host:8080/gcm-demo)
      */
-    public static final String SERVER_URL = "http://"+SERVER_IP_NAME+":8080";
-
+    //public static final String SERVER_URL = "http://"+SERVER_IP_NAME+":8080";
+	public static final String SERVER_URL = "http://"+SERVER_IP_NAME;
     /**
      * API Key for Android Apps from the Google API console 
      * https://console.developers.google.com/project/apps~metal-complex-658/apiui/credential
@@ -44,7 +45,8 @@ public final class CommonUtilities {
     /**
      * Google API project id registered to use GCM.
      */
-    public static final String SENDER_ID = "22298386436";// PROJECT ID: https://console.developers.google.com/project/apps~metal-complex-658
+    public static final String SENDER_ID = "22298386436";
+    // PROJECT ID: https://console.developers.google.com/project/apps~metal-complex-658
 
     /**
      * Tag used on log messages.

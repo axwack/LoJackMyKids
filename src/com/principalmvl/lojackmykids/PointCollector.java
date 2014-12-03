@@ -15,8 +15,7 @@ public class PointCollector implements OnTouchListener {
 
 	private PointCollectorListener listener;
 	private List<Point> points = new ArrayList<Point>();
-	private Location location;
-	
+
 	public PointCollector() {
 	}
 	
@@ -36,15 +35,15 @@ public class PointCollector implements OnTouchListener {
 		
 		points.add(new Point(x,y));
 		
-		if (points.size()==4){
+		if (points.size()==2){ //This sets the number of touches before a GPS coordinate goes out
 			if(listener != null){
 				//listener.pointsCollected(points); //This is set on the Child Activity. May need to change on the Child Activity
-				listener.onLocationChanged(location); //we need to pass a loction to this
+				//listener.onLocationChanged(location); //we need to pass a location to this
 			}
 		}	
 		return false;
 	}
-
+/*
 	public Location getLocation() {
 		return location;
 	}
@@ -52,5 +51,5 @@ public class PointCollector implements OnTouchListener {
 	public void setLocation(Location location) {
 		this.location = location;
 	}
-	
+	*/
 }
