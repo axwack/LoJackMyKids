@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.message.BasicNameValuePair;
 
 import android.app.Activity;
 import android.content.Context;
@@ -415,39 +415,35 @@ public class ChildActivity extends Activity implements LocationListener,
 			 */
 			@Override
 			protected String doInBackground(Void... params) {
-				String msg = "";
-				Bundle data = new Bundle();
-				JSONObject GPSPosition = new JSONObject();
+				String msg = "";			
+							
 				try {
-								
-					GPSPosition.put("registration_ids",regid);
-					GPSPosition.put("lat", latLng.getLat());
-					GPSPosition.put("lng", latLng.getLng());
-					
-					//data.putString("regid", latLng.getLat();	
-					//data.putDouble("lat", latLng.getLat());
-					//data.putDouble("lng", latLng.getLng());
+					List<BasicNameValuePair> data = new ArrayList<BasicNameValuePair>();
+					data.add(new BasicNameValuePair("reg_ids", regid)); //TODO: this needs to be able to take an array of Regids..how does RegId get multiple?
+					data.add(new BasicNameValuePair("lat", Double.toString(latLng.getLat())));
+					data.add(new BasicNameValuePair("lng", Double.toString(latLng.getLng())));
+					data.add(new BasicNameValuePair("API_KEY", CommonUtilities.AP_KEY));
+					UrlEncodedFormEntity GPSPosition = new UrlEncodedFormEntity(data, "UTF-8");
 					
 					//String id = Integer.toString(msgId.incrementAndGet());
 					
 					//gcm.send(SENDER_ID + "@gcm.googleapis.com", id, 0, data);
-					ServerUtilities.send(CommonUtilities.SERVER_URL+"/send", GPSPosition);
+					ServerUtilities.send(CommonUtilities.SERVER_URL+"sendHttp", GPSPosition);
 					msg = "Sent message : ";
 					
-					Log.i(MainActivity.DEBUGTAG, "[CHILD ACTIVITY] " + msg+data.toString());
 					Log.i(MainActivity.DEBUGTAG, "[CHILD ACTIVITY] JSON: " + GPSPosition.toString());
 					msg+=data.toString();
 					
-				} catch (IOException | JSONException ex) {
+				} catch (IOException ex) {
 					msg = "Error :" + ex.getMessage();
 					Log.i(MainActivity.DEBUGTAG, "[CHILD ACTIVITY] " + msg);
 				}
-				return data.toString();
+				return msg;
 			}
 
 			@Override
 			protected void onPostExecute(String msg) {
-				Log.i(MainActivity.DEBUGTAG, "[CHILD ACTIVITY] OnPostExecute(): "+msg);
+				
 			}
 
 		}.execute(null, null, null);

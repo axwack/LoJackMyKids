@@ -23,20 +23,25 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONObject;
 
 import android.content.Context;
 import android.util.Log;
@@ -136,9 +141,9 @@ public final class ServerUtilities {
 	/**
 	 * Send a message.
 	 */
-	public static String send(String url, Object jsonObject) throws IOException {
+	public static String send(String url, UrlEncodedFormEntity GPSPosition) throws IOException {
 
-		return post(url, jsonObject, MAX_ATTEMPTS);
+		return post(url, GPSPosition, MAX_ATTEMPTS);
 	}
 
 	/**
@@ -152,48 +157,52 @@ public final class ServerUtilities {
 	 * @throws IOException
 	 *             propagated from POST.
 	 */
-	private static String executePost(String endpoint, Object params)
+	
+	private static String executePost(String endpoint, UrlEncodedFormEntity params)
 			throws IOException {
 		
-		
+		 HttpURLConnection connection;
+	       OutputStreamWriter request = null;
+	            URL url = null;   
+	            String result = null;         
+
 		InputStream inputStream = null;
-		String result = "";
+
 		try {
-			URL url = new URL(endpoint);
+			url = new URL(endpoint);
 		} catch (MalformedURLException e) {
 			throw new IllegalArgumentException("invalid url: " + endpoint);
 		}
-		try {
+		try {           
+			
 			// 1. create HttpClient
 			HttpClient httpclient = new DefaultHttpClient();
 
 			// 2. make POST request to the given URL
 			HttpPost httpPost = new HttpPost(endpoint);
-
-			String json = "";
-
+			
 			// 3. build jsonObject but don't need here
 
 			// 4. convert JSONObject to JSON to String
-			json = params.toString();
-
+						
 			// ** Alternative way to convert Person object to JSON string usin
 			// Jackson Lib
 			// ObjectMapper mapper = new ObjectMapper();
 			// json = mapper.writeValueAsString(person);
 
 			// 5. set json to StringEntity
-			StringEntity se = new StringEntity(json);
-
-			// 6. set httpPost Entity
-			httpPost.setEntity(se);
-
+			//StringEntity se = new StringEntity(json);
+			
 			// 7. Set some headers to inform server about the type of the
 			// content
 			httpPost.setHeader("Accept", "application/json");
-			httpPost.setHeader("Content-type", "application/json");
-
-			
+			//httpPost.setHeader("Content-type", "application/json");
+			httpPost.setHeader("Authorization", "key="+CommonUtilities.AP_KEY);
+						
+			// 6. set httpPost Entity		
+			//httpPost.setEntity(new StringEntity(json));
+			httpPost.setEntity(params);
+		
 			// 8. Execute POST request to the given URL
 			HttpResponse httpResponse = httpclient.execute(httpPost);
 
@@ -210,8 +219,75 @@ public final class ServerUtilities {
             Log.d("InputStream", e.getLocalizedMessage());
         }
         // 11. return result
+		Log.i(MainActivity.DEBUGTAG,"[SERVER UTILIITES] HTTP Response: "+ result);
         return result;
 	}
+	
+	private static String executePost(String endpoint, Map<String,String> params)
+			throws IOException {
+		
+		 HttpURLConnection connection;
+	       OutputStreamWriter request = null;
+	            URL url = null;   
+	            String result = null;         
+
+		InputStream inputStream = null;
+
+		try {
+			url = new URL(endpoint);
+		} catch (MalformedURLException e) {
+			throw new IllegalArgumentException("invalid url: " + endpoint);
+		}
+		try {           
+			
+			// 1. create HttpClient
+			HttpClient httpclient = new DefaultHttpClient();
+
+			// 2. make POST request to the given URL
+			HttpPost httpPost = new HttpPost(endpoint);
+			
+			// 3. build jsonObject but don't need here
+			String regId=params.get("regid");
+			// 4. convert JSONObject to JSON to String
+						
+			// ** Alternative way to convert Person object to JSON string usin
+			// Jackson Lib
+			// ObjectMapper mapper = new ObjectMapper();
+			// json = mapper.writeValueAsString(person);
+
+			// 5. set json to StringEntity
+			StringEntity se = new StringEntity(regId);
+			
+			// 7. Set some headers to inform server about the type of the
+			// content
+			httpPost.setHeader("Accept", "application/json");
+			//httpPost.setHeader("Content-type", "application/json");
+			httpPost.setHeader("Authorization", "key="+CommonUtilities.AP_KEY);
+						
+			// 6. set httpPost Entity		
+			//httpPost.setEntity(new StringEntity(json));
+			httpPost.setEntity(se);
+		
+			// 8. Execute POST request to the given URL
+			HttpResponse httpResponse = httpclient.execute(httpPost);
+
+			// 9. receive response as inputStream
+			inputStream = httpResponse.getEntity().getContent();
+
+			// 10. convert inputstream to string
+			if (inputStream != null)
+				result = convertInputStreamToString(inputStream);
+			else
+				result = "Did not work!";
+
+		} catch (Exception e) {
+            Log.d("InputStream", e.getLocalizedMessage());
+        }
+        // 11. return result
+		Log.i(MainActivity.DEBUGTAG,"[SERVER UTILIITES] HTTP Response: "+ result);
+        return result;
+	}
+	
 	 private static String convertInputStreamToString(InputStream inputStream) throws IOException{
 	        BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
 	        String line = "";
@@ -225,7 +301,7 @@ public final class ServerUtilities {
 	    }   
 
 	/** Issue a POST with exponential backoff */
-	private static String post(String endpoint, Map<String, String> params,
+	private static String post(String endpoint, UrlEncodedFormEntity params,
 			int maxAttempts) throws IOException {
 		long backoff = BACKOFF_MILLI_SECONDS + random.nextInt(1000);
 		for (int i = 1; i <= maxAttempts; i++) {
@@ -250,10 +326,9 @@ public final class ServerUtilities {
 		}
 		return null;
 	}
-
 	/** Issue a POST with exponential backoff */
-	private static String post(String endpoint, Object params, int maxAttempts)
-			throws IOException {
+	private static String post(String endpoint, Map<String,String> params,
+			int maxAttempts) throws IOException {
 		long backoff = BACKOFF_MILLI_SECONDS + random.nextInt(1000);
 		for (int i = 1; i <= maxAttempts; i++) {
 			Log.d(TAG, "Attempt #" + i + " to connect");

@@ -29,7 +29,7 @@ public final class CommonUtilities {
      */
 	
 	//TODO: Change the IP of the Server for Debugging and Testing
-	//public static final String SERVER_IP_NAME = "192.168.0.44";
+	//public static final String SERVER_IP_NAME = "localhost:8888/";
 	public static final String SERVER_IP_NAME = "metal-complex-658.appspot.com/";
     /**
      * Base URL of the Demo Server (such as http://my_host:8080/gcm-demo)
