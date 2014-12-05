@@ -430,8 +430,6 @@ public class ChildActivity extends Activity implements LocationListener,
 					//gcm.send(SENDER_ID + "@gcm.googleapis.com", id, 0, data);
 					ServerUtilities.send(CommonUtilities.SERVER_URL+"sendHttp", GPSPosition);
 					msg = "Sent message : ";
-					
-					Log.i(MainActivity.DEBUGTAG, "[CHILD ACTIVITY] JSON: " + GPSPosition.toString());
 					msg+=data.toString();
 					
 				} catch (IOException ex) {
