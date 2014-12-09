@@ -13,6 +13,7 @@ import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -68,6 +69,7 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	AtomicInteger msgId = new AtomicInteger();
 	Context context;
 	String regId;
+	private GcmBroadcastReceiver receiver;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +94,12 @@ public class MainActivity extends FragmentActivity implements TabListener,
 
 			Intent intename = getIntent();
 
+			IntentFilter filter = new IntentFilter(
+					GcmBroadcastReceiver.ACTION_RESP);
+			filter.addCategory(Intent.CATEGORY_DEFAULT);
+			receiver = new GcmBroadcastReceiver();
+			registerReceiver(receiver, filter);
+
 			// Get the Values passed in the intent. Looking for two flags:
 			// DEVICE_IS_CHILD and Password_SET
 			password_set = intename.getBooleanExtra(
@@ -102,7 +110,6 @@ public class MainActivity extends FragmentActivity implements TabListener,
 
 			Log.i(DEBUGTAG, "Password flag passed is " + password_set);
 			Log.i(DEBUGTAG, "Device is child flag passed is " + device_is_child);
-			Log.i(DEBUGTAG, "Intent is  " + getIntent());
 
 		}
 		/*
@@ -152,10 +159,10 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	/**
 	 * Receiving push messages
 	 * */
-	private final BroadcastReceiver mHandleMessageReceiver = new BroadcastReceiver() {
+	private final GcmBroadcastReceiver mHandleMessageReceiver = new GcmBroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			String newMessage = intent.getExtras().getString(EXTRA_MESSAGE);
+			String newMessage = intent.getExtras().getString("lat");
 			// Waking up mobile if it is sleeping
 			Wakelocker.acquire(getApplicationContext());
 
@@ -163,7 +170,9 @@ public class MainActivity extends FragmentActivity implements TabListener,
 			 * Take appropriate action on this message depending upon your app
 			 * requirement For now i am just displaying it on the screen
 			 * */
-
+			Log.i(DEBUGTAG,
+					"[MAIN ACTIVITY] We should receive data from intent :"
+							+ newMessage);
 			// Showing received message
 			// lblMessage.append(newMessage + "\n");
 			Toast.makeText(getApplicationContext(),
@@ -185,10 +194,8 @@ public class MainActivity extends FragmentActivity implements TabListener,
 
 	@Override
 	protected void onStop() {
-
 		super.onStop();
-		// Disconnecting the client invalidates it.
-		// mLocationClient.disconnect();
+		unregisterReceiver(receiver);
 	}
 
 	/**
@@ -260,6 +267,13 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	protected void onResume() {
 		super.onResume();
 		checkPlayServices();
+
+		Intent i = getIntent();
+
+		if (i.hasExtra(getString(R.string.lat))) {
+			String lat = i.getExtras().getString(getString(R.string.lat));
+			Log.i(DEBUGTAG, "[MAIN ACTIVITY] OnResume: Lat: " + lat);
+		}
 	}
 
 	/**

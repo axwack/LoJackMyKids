@@ -21,20 +21,6 @@ public class Common extends Application {
 		super.onCreate();
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-		List<String> emailList = getEmailList();
-		email_arr = emailList.toArray(new String[emailList.size()]);
-
 	}
 
-	private List<String> getEmailList() {
-		List<String> list = new ArrayList<String>();
-		Account[] accounts = AccountManager.get(this).getAccounts();
-
-		for(Account account: accounts){
-			if(Patterns.EMAIL_ADDRESS.matcher(account.name).matches()){
-				list.add(account.name);
-			}
-		}
-		return list;
-	}
 }

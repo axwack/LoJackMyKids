@@ -55,7 +55,7 @@ public class ChildActivity extends Activity implements LocationListener,
 	String regid;
 
 	public final static String PREFS_NAME = "LJKIDSPrefs";
-	
+
 	// Handle to GCM
 	GoogleCloudMessaging gcm;
 
@@ -84,7 +84,8 @@ public class ChildActivity extends Activity implements LocationListener,
 			// Register the Child with GCM
 			regid = getRegistrationId(context);
 
-			Log.i(MainActivity.DEBUGTAG, "[CHILD ACTIVITY] Device is registered as "+ regid);
+			Log.i(MainActivity.DEBUGTAG,
+					"[CHILD ACTIVITY] Device is registered as " + regid);
 			if (regid.isEmpty()) {
 				registerInBackground();
 			}
@@ -112,21 +113,21 @@ public class ChildActivity extends Activity implements LocationListener,
 		 */
 		// Helper for GPS-Position
 		LocationManager locManager;
-		
+
 		// GPS Position
 		locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
 		locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
 				this);
-		
+
 		Criteria criteria = new Criteria();
 		String provider = locManager.getBestProvider(criteria, false);
 		Location location = locManager.getLastKnownLocation(provider);
-		
-		this.onLocationChanged(location);
-		
+
 		// Create the ArrayList to store our points
 		Points = new ArrayList<ExtendedLatLng>();
+
+		this.onLocationChanged(location);
 
 		// Handle the Login Button Click
 		Button ChildLoginButton = (Button) findViewById(R.id.child_loginBtn);
@@ -153,40 +154,47 @@ public class ChildActivity extends Activity implements LocationListener,
 	/*
 	 * Register the ID in the background
 	 */
-	private void registerInBackground(){
-		new AsyncTask<Void, Void, String>(){
+	private void registerInBackground() {
+		new AsyncTask<Void, Void, String>() {
 			@Override
 			protected String doInBackground(Void... params) {
 				String msg = "";
-	            try {
-	                if (gcm == null) {
-	                    gcm = GoogleCloudMessaging.getInstance(context);
-	                }
-	                regid = gcm.register(SENDER_ID);
-	                Log.i(MainActivity.DEBUGTAG, "Device registered, registration ID=" + regid);
+				try {
+					if (gcm == null) {
+						gcm = GoogleCloudMessaging.getInstance(context);
+					}
+					regid = gcm.register(SENDER_ID);
+					Log.i(MainActivity.DEBUGTAG,
+							"Device registered, registration ID=" + regid);
 
-	                // You should send the registration ID to your server over HTTP,
-	                // so it can use GCM/HTTP or CCS to send messages to your app.
-	                // The request to your server should be authenticated if your app
-	                // is using accounts.
-	                sendRegistrationIdToBackend();
+					// You should send the registration ID to your server over
+					// HTTP,
+					// so it can use GCM/HTTP or CCS to send messages to your
+					// app.
+					// The request to your server should be authenticated if
+					// your app
+					// is using accounts.
+					sendRegistrationIdToBackend();
 
-	                // For this demo: we don't need to send it because the device
-	                // will send upstream messages to a server that echo back the
-	                // message using the 'from' address in the message.
+					// For this demo: we don't need to send it because the
+					// device
+					// will send upstream messages to a server that echo back
+					// the
+					// message using the 'from' address in the message.
 
-	                // Persist the regID - no need to register again.
-	                storeRegistrationId(context, regid);
-	            } catch (IOException ex) {
-	                msg = "Error :" + ex.getMessage();
-	                // If there is an error, don't just keep trying to register.
-	                // Require the user to click a button again, or perform
-	                // exponential back-off.
-	            }
-	            return msg;
-			}		
-		}.execute(null,null,null);	
+					// Persist the regID - no need to register again.
+					storeRegistrationId(context, regid);
+				} catch (IOException ex) {
+					msg = "Error :" + ex.getMessage();
+					// If there is an error, don't just keep trying to register.
+					// Require the user to click a button again, or perform
+					// exponential back-off.
+				}
+				return msg;
+			}
+		}.execute(null, null, null);
 	}
+
 	/**
 	 * Check the device to make sure it has the Google Play Services APK. If it
 	 * doesn't, display a dialog that allows users to download the APK from the
@@ -221,7 +229,8 @@ public class ChildActivity extends Activity implements LocationListener,
 		final SharedPreferences prefs = getGCMPreferences(context);
 		String registrationId = prefs.getString(PROPERTY_REG_ID, "");
 		if (registrationId.isEmpty()) {
-			Log.i(MainActivity.DEBUGTAG, "[CHILDACTIVITY] Registration not found.");
+			Log.i(MainActivity.DEBUGTAG,
+					"[CHILDACTIVITY] Registration not found.");
 			return "";
 		}
 		// Check if app was updated; if so, it must clear the registration ID
@@ -278,8 +287,8 @@ public class ChildActivity extends Activity implements LocationListener,
 	}
 
 	/*
- * 
- 	* Gets the points on the latitiude longitude on the map
+	 * 
+	 * Gets the points on the latitiude longitude on the map
 	 */
 	@SuppressWarnings("unused")
 	private ExtendedLatLng getPoint(Location loc) {
@@ -289,7 +298,7 @@ public class ChildActivity extends Activity implements LocationListener,
 
 	}
 
-	private ArrayList<ExtendedLatLng> getPoints(Location loc) {
+	private boolean getPoints(Location loc) {
 
 		/*
 		 * Start to get the first point After getting the first point check the
@@ -302,17 +311,20 @@ public class ChildActivity extends Activity implements LocationListener,
 		 * 5 minutes If the phone moves significantly (> 30%) from the last
 		 * point then increase the interval and capture more
 		 */
-
+		boolean returnVal = false;
 		ExtendedLatLng latLng = new ExtendedLatLng(loc.getLatitude(),
 				loc.getLongitude());
 
 		Log.i(MainActivity.DEBUGTAG, "Childs Lat Lng @: " + latLng.getLat()
 				+ " " + latLng.getLng());
 
-		if (Points.size() == 0)
+		if (Points.size() == 0) {
 			Points.add(latLng);
+			returnVal = true;
 
-		if (getPoint(latLng) != null
+		}
+
+		else if (getPoint(latLng) != null
 				&& latLng.getDistance(Points.get(Points.size() - 1)) > 0) {
 			Log.i(MainActivity.DEBUGTAG, "LatLng is new: " + latLng.hashCode());
 			Points.add(latLng);
@@ -320,8 +332,9 @@ public class ChildActivity extends Activity implements LocationListener,
 			Log.i(MainActivity.DEBUGTAG,
 					"Distance: "
 							+ latLng.getDistance(Points.get(Points.size() - 1)));
+			returnVal = false;
 		}
-		return Points;
+		return returnVal;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -393,58 +406,81 @@ public class ChildActivity extends Activity implements LocationListener,
 
 	/*
 	 * (non-Javadoc)
-	 * @see android.location.LocationListener#onLocationChanged(android.location.Location)
-	 * This method provides location of the gps.
+	 * 
+	 * @see
+	 * android.location.LocationListener#onLocationChanged(android.location.
+	 * Location) This method provides location of the gps.
 	 */
 	@Override
 	public void onLocationChanged(Location location) {
-		
-		
-		final ExtendedLatLng latLng = new ExtendedLatLng(location.getLatitude(), location.getLongitude());
-		Log.i(MainActivity.DEBUGTAG, "[CHILD ACTIVITY] Lat Lng: " + latLng.getLat() + "," + latLng.getLng());
-		
-		//Points = this.getPoints(location);
-		//pointCollector.setLocation(location);
 
-		new AsyncTask<Void, ExtendedLatLng, String>() {
-			/*
-			 * (non-Javadoc)
-			 * 
-			 * @see android.os.AsyncTask#doInBackground(java.lang.Object[]) This
-			 * sends the actual GPS coordinate to GCM
-			 */
-			@Override
-			protected String doInBackground(Void... params) {
-				String msg = "";			
-							
-				try {
-					List<BasicNameValuePair> data = new ArrayList<BasicNameValuePair>();
-					data.add(new BasicNameValuePair("reg_ids", regid)); //TODO: this needs to be able to take an array of Regids..how does RegId get multiple?
-					data.add(new BasicNameValuePair("lat", Double.toString(latLng.getLat())));
-					data.add(new BasicNameValuePair("lng", Double.toString(latLng.getLng())));
-					data.add(new BasicNameValuePair("API_KEY", CommonUtilities.AP_KEY));
-					UrlEncodedFormEntity GPSPosition = new UrlEncodedFormEntity(data, "UTF-8");
-					
-					//String id = Integer.toString(msgId.incrementAndGet());
-					
-					//gcm.send(SENDER_ID + "@gcm.googleapis.com", id, 0, data);
-					ServerUtilities.send(CommonUtilities.SERVER_URL+"sendHttp", GPSPosition);
-					msg = "Sent message : ";
-					msg+=data.toString();
-					
-				} catch (IOException ex) {
-					msg = "Error :" + ex.getMessage();
-					Log.i(MainActivity.DEBUGTAG, "[CHILD ACTIVITY] " + msg);
+		final ExtendedLatLng latLng = new ExtendedLatLng(
+				location.getLatitude(), location.getLongitude());
+		Log.i(MainActivity.DEBUGTAG,
+				"[CHILD ACTIVITY] Lat Lng: " + latLng.getLat() + ","
+						+ latLng.getLng());
+
+		if (this.getPoints(location)) {
+
+			new AsyncTask<Void, ExtendedLatLng, String>() {
+				/*
+				 * (non-Javadoc)
+				 * 
+				 * @see android.os.AsyncTask#doInBackground(java.lang.Object[])
+				 * This sends the actual GPS coordinate to GCM
+				 */
+				@Override
+				protected String doInBackground(Void... params) {
+					String msg = "";
+
+					try {
+						List<BasicNameValuePair> data = new ArrayList<BasicNameValuePair>();
+						data.add(new BasicNameValuePair("reg_ids", regid)); // TODO:
+																			// this
+																			// needs
+																			// to
+																			// be
+																			// able
+																			// to
+																			// take
+																			// an
+																			// array
+																			// of
+																			// Regids..how
+																			// does
+																			// RegId
+																			// get
+																			// multiple?
+						data.add(new BasicNameValuePair("lat", Double
+								.toString(latLng.getLat())));
+						data.add(new BasicNameValuePair("lng", Double
+								.toString(latLng.getLng())));
+						data.add(new BasicNameValuePair("API_KEY",
+								CommonUtilities.AP_KEY));
+						UrlEncodedFormEntity GPSPosition = new UrlEncodedFormEntity(
+								data, "UTF-8");
+
+						ServerUtilities.send(CommonUtilities.SERVER_URL
+								+ "sendHttp", GPSPosition);
+						msg = "Sent message : ";
+						msg += data.toString();
+
+					} catch (IOException ex) {
+						msg = "Error :" + ex.getMessage();
+						Log.i(MainActivity.DEBUGTAG, "[CHILD ACTIVITY] " + msg);
+					}
+					return msg;
 				}
-				return msg;
-			}
 
-			@Override
-			protected void onPostExecute(String msg) {
-				
-			}
+				@Override
+				protected void onPostExecute(String msg) {
 
-		}.execute(null, null, null);
+				}
+
+			}.execute(null, null, null);
+		}
+		//The location is the same so we don't do a call to GCM
+		Log.i(MainActivity.DEBUGTAG, "Location is the same.");
 	}
 
 	/**
@@ -459,8 +495,8 @@ public class ChildActivity extends Activity implements LocationListener,
 	private void storeRegistrationId(Context context, String regId) {
 		final SharedPreferences prefs = getGCMPreferences(context);
 		int appVersion = getAppVersion(context);
-		Log.i(MainActivity.DEBUGTAG, "[ChildActivity] Saving regId on app version "
-				+ appVersion);
+		Log.i(MainActivity.DEBUGTAG,
+				"[ChildActivity] Saving regId on app version " + appVersion);
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putString(PROPERTY_REG_ID, regId);
 		editor.putInt(PROPERTY_APP_VERSION, appVersion);
@@ -474,7 +510,8 @@ public class ChildActivity extends Activity implements LocationListener,
 	 * message using the 'from' address in the message.
 	 */
 	private void sendRegistrationIdToBackend() {
-		Log.i(MainActivity.DEBUGTAG, "[CHILDACTIVITY] sendRegistrationIdToBackend()");
+		Log.i(MainActivity.DEBUGTAG,
+				"[CHILDACTIVITY] sendRegistrationIdToBackend()");
 	}
 
 	@Override

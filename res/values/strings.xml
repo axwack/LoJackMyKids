@@ -36,5 +36,6 @@
     <string name="password">PASSWORD</string>
     <string name="google_plus_signedin">Logged In</string>
     <string name="segue_from_child">false</string>
+    <string name="lat">lat</string>
 
 </resources>
