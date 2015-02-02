@@ -85,14 +85,16 @@ public class ChildActivity extends Activity implements LocationListener,
 			regid = getRegistrationId(context);
 
 			Log.i(MainActivity.DEBUGTAG,
-					"[CHILD ACTIVITY] Device is registered as " + regid);
-			if (regid.isEmpty()) {
-				registerInBackground();
-			}
+					"[CHILD ACTIVITY] Device is registered as " + regid);			
 		} else {
 			Log.i(MainActivity.DEBUGTAG,
 					"No valid Google Play Services APK found.");
 		}
+		
+		if (regid.isEmpty()) {
+				registerInBackground();
+			}
+		
 		// Get the Values passed in the intent. Looking for two flags:
 		// DEVICE_IS_CHILD and Password_SET
 		password_set = values.getBoolean(getString(R.string.password_set),
@@ -165,7 +167,7 @@ public class ChildActivity extends Activity implements LocationListener,
 					}
 					regid = gcm.register(SENDER_ID);
 					Log.i(MainActivity.DEBUGTAG,
-							"Device registered, registration ID=" + regid);
+							"[CHILDACTIVITY] Device registered, registration ID=" + regid);
 
 					// You should send the registration ID to your server over
 					// HTTP,
@@ -228,11 +230,16 @@ public class ChildActivity extends Activity implements LocationListener,
 	private String getRegistrationId(Context context) {
 		final SharedPreferences prefs = getGCMPreferences(context);
 		String registrationId = prefs.getString(PROPERTY_REG_ID, "");
+		
+		Log.i(MainActivity.DEBUGTAG, "[ChildACTIVITY] [Child Account] Registration Id: "
+				+ registrationId);
+		
 		if (registrationId.isEmpty()) {
 			Log.i(MainActivity.DEBUGTAG,
 					"[CHILDACTIVITY] Registration not found.");
 			return "";
 		}
+		
 		// Check if app was updated; if so, it must clear the registration ID
 		// since the existing regID is not guaranteed to work with the new
 		// app version.
@@ -334,6 +341,9 @@ public class ChildActivity extends Activity implements LocationListener,
 							+ latLng.getDistance(Points.get(Points.size() - 1)));
 			returnVal = false;
 		}
+		Log.i(MainActivity.DEBUGTAG,
+				"Distance: "
+						+ latLng.getDistance(Points.get(Points.size() - 1)));
 		return returnVal;
 	}
 
@@ -511,7 +521,7 @@ public class ChildActivity extends Activity implements LocationListener,
 	 */
 	private void sendRegistrationIdToBackend() {
 		Log.i(MainActivity.DEBUGTAG,
-				"[CHILDACTIVITY] sendRegistrationIdToBackend()");
+				"[CHILDACTIVITY] sendRegistrationIdToBackend(): NEED IMPLEMENTATION");
 	}
 
 	@Override

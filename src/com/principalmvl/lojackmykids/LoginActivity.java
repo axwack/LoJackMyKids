@@ -75,6 +75,7 @@ public class LoginActivity extends PlusBaseActivity implements
 	private static boolean device_is_child = false;
 	private static boolean segue_from_child = false;
 	private static String password = "";
+	private static String userEmail="";
 	private SharedPreferences sharedPref;
 	private String PREFS_NAME = "LJKIDSPrefs";
 	private int mIndex;
@@ -94,6 +95,36 @@ public class LoginActivity extends PlusBaseActivity implements
 		mPlusSignInButton = (SignInButton) findViewById(R.id.plus_sign_in_button);
 		mLoginButton = (Button) findViewById(R.id.login_button);
 
+		mLoginFormView = findViewById(R.id.login_form);
+		mProgressView = findViewById(R.id.login_progress);
+		mEmailLoginFormView = (View) findViewById(R.id.email_login_form);
+		mSignOutButtons = (View) findViewById(R.id.plus_sign_out_buttons);
+		
+		mLoginButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				attemptLogin(); //
+			}
+		});
+		// Set up the login form.
+				mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
+				populateAutoComplete();
+
+				mPasswordView = (EditText) findViewById(R.id.password);
+
+				mPasswordView
+						.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+							@Override
+							public boolean onEditorAction(TextView textView, int id,
+									KeyEvent keyEvent) {
+								if (id == R.id.login || id == EditorInfo.IME_NULL) {
+									attemptLogin();
+									return true;
+								}
+								return false;
+							}
+						});
+		
 		// get preferences saved persistently
 		checkForSharedPrefs();
 
@@ -111,6 +142,7 @@ public class LoginActivity extends PlusBaseActivity implements
 				getString(R.string.password_set), false);
 		device_is_child = intename.getBooleanExtra(
 				getString(R.string.device_is_child), false);
+		userEmail=intename.getStringExtra(getString(R.id.email));
 
 		if (password_set) {
 			setGooglePlusButtonText(mPlusSignInButton,
@@ -148,38 +180,7 @@ public class LoginActivity extends PlusBaseActivity implements
 			// Services.
 			mPlusSignInButton.setVisibility(View.GONE);
 			return;
-		}
-
-		// Set up the login form.
-		mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
-		populateAutoComplete();
-
-		mPasswordView = (EditText) findViewById(R.id.password);
-
-		mPasswordView
-				.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-					@Override
-					public boolean onEditorAction(TextView textView, int id,
-							KeyEvent keyEvent) {
-						if (id == R.id.login || id == EditorInfo.IME_NULL) {
-							attemptLogin();
-							return true;
-						}
-						return false;
-					}
-				});
-
-		mLoginButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				attemptLogin(); //
-			}
-		});
-
-		mLoginFormView = findViewById(R.id.login_form);
-		mProgressView = findViewById(R.id.login_progress);
-		mEmailLoginFormView = findViewById(R.id.email_login_form);
-		mSignOutButtons = findViewById(R.id.plus_sign_out_buttons);
+		}		
 	}
 
 	@Override
@@ -550,6 +551,8 @@ public class LoginActivity extends PlusBaseActivity implements
 				intObj.putExtra(getString(R.string.password_set), password_set);
 				intObj.putExtra(getString(R.string.device_is_child),
 						device_is_child);
+				
+				intObj.putExtra(getString(R.string.userEmail), mEmail);
 				// Start LoginActivity
 				startActivity(intObj);
 			} else {
@@ -582,5 +585,11 @@ public class LoginActivity extends PlusBaseActivity implements
 	public void onNeutralClick(DialogInterface dialog, int id) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void onConnectionSuspended(int cause) {
+		// TODO Auto-generated method stub
+		
 	}
 }

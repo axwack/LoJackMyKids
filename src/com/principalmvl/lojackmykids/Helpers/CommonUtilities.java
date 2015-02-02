@@ -51,13 +51,13 @@ public final class CommonUtilities {
     /**
      * Tag used on log messages.
      */
-    public static final String TAG = "GCMDemo";
+    public static final String TAG = "LJKids";
 
     /**
      * Intent used to display a message in the screen.
      */
     static final String DISPLAY_MESSAGE_ACTION =
-            "com.google.android.gcm.demo.app.DISPLAY_MESSAGE";
+            "com.principalmvl.lojackmykids.DISPLAY_MESSAGE";
 
     /**
      * Intent's extra that contains the message to be displayed.
@@ -75,6 +75,7 @@ public final class CommonUtilities {
      */
     public static void displayMessage(Context context, String message) {
         Intent intent = new Intent(DISPLAY_MESSAGE_ACTION);
+     
         intent.putExtra(EXTRA_MESSAGE, message);
         context.sendBroadcast(intent);
     }

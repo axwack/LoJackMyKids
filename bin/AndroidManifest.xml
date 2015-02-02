@@ -18,10 +18,10 @@
             android:name=".LoginActivity"
             android:label="@string/title_activity_login"
             android:windowSoftInputMode="adjustResize|stateHidden" >
-            <!-- <intent-filter>
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter> -->
+            </intent-filter> 
         </activity>
         <activity
             android:name=".PasswordActivity"
@@ -30,10 +30,10 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name" >
-            <intent-filter>
+           <!--  <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-           </intent-filter>
+           </intent-filter> -->
         </activity>
 
         <meta-data
@@ -71,6 +71,7 @@
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
                 <category android:name="com.principalmvl.lojackmykids"/>
+               <!--  <action android:name="com.principalmvl.lojackmykids.DISPLAY_MESSAGE"/> -->
             </intent-filter>
         </receiver>
 

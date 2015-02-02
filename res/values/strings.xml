@@ -18,10 +18,10 @@
     <string name="known_location_client">Client</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="error_config">Error in Main Activity</string>
-    <string name="server_registering">Trying (attempt %1$d/%2$d) to register device on Demo Server.</string>
-    <string name="server_registered">From Demo Server: successfully added device!!</string>
-    <string name="server_register_error">Could not register device on Demo Server after %1$d attempts.</string>
-    <string name="server_unregister_error">Could not unregister device on Demo Server (%1$s).</string>
+    <string name="server_registering">Trying (attempt %1$d/%2$d) to register device on App Engine.</string>
+    <string name="server_registered">From App Engine successfully added device!!</string>
+    <string name="server_register_error">Could not register device on App Engine after %1$d attempts.</string>
+    <string name="server_unregister_error">Could not unregister device on App Engine (%1$s).</string>
     <string name="server_unregistered">From Demo Server: successfully removed device!</string>
     <string name="set_client_only_view">Set this device as Child Client?</string>
     <string name="settings_password">password</string>
@@ -37,5 +37,6 @@
     <string name="google_plus_signedin">Logged In</string>
     <string name="segue_from_child">false</string>
     <string name="lat">lat</string>
+    <string name="userEmail">email</string>
 
 </resources>

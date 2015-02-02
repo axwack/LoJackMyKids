@@ -10,7 +10,6 @@ import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.ActionBar.TabListener;
 import android.app.FragmentTransaction;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -53,6 +52,7 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	private ActionBar actionBar;
 	private SharedPreferences sharedPref;
 	boolean device_is_child, password_set;
+	private static String userEmail="";
 	public final static String PREFS_NAME = "LJKIDSPrefs";
 
 	private String[] tabNames = { "Map", "Reporting" };
@@ -97,6 +97,7 @@ public class MainActivity extends FragmentActivity implements TabListener,
 			IntentFilter filter = new IntentFilter(
 					GcmBroadcastReceiver.ACTION_RESP);
 			filter.addCategory(Intent.CATEGORY_DEFAULT);
+			
 			receiver = new GcmBroadcastReceiver();
 			registerReceiver(receiver, filter);
 
@@ -107,10 +108,12 @@ public class MainActivity extends FragmentActivity implements TabListener,
 
 			device_is_child = intename.getBooleanExtra(
 					getString(R.string.device_is_child), false);
+			
+			userEmail = intename.getStringExtra(getString(R.string.userEmail));
 
-			Log.i(DEBUGTAG, "Password flag passed is " + password_set);
-			Log.i(DEBUGTAG, "Device is child flag passed is " + device_is_child);
-
+			Log.i(DEBUGTAG, "[MAINACTIVITY] Password flag passed is " + password_set);
+			Log.i(DEBUGTAG, "[MAINACTIVITY] Device is child flag passed is " + device_is_child);
+			Log.i(DEBUGTAG, "[MAINACTIVITY] Email Passed is " + userEmail);
 		}
 		/*
 		 * Check the shared preference to see if the system is admin or child.
@@ -130,13 +133,11 @@ public class MainActivity extends FragmentActivity implements TabListener,
 
 			@Override
 			public void onPageScrolled(int arg0, float arg1, int arg2) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void onPageScrollStateChanged(int arg0) {
-				// TODO Auto-generated method stub
 
 			}
 		});
@@ -146,46 +147,19 @@ public class MainActivity extends FragmentActivity implements TabListener,
 		// Check device for Play Services APK. If check succeeds, proceed with
 		// GCM registration.
 		if (checkPlayServices()) {
-			// gcm = GoogleCloudMessaging.getInstance(this);
-			regId = getRegistrationId(context);
-		}
-		if (regId.isEmpty()) {
-			registerInBackground();
+
+			regId = getRegistrationId(context); // Gets the Registration ID from
+												// the Shared Preferences
+
 		} else {
 			Log.i(DEBUGTAG, "No valid Google Play Services APK found.");
 		}
+
+		registerInBackground();
 	}
-
-	/**
-	 * Receiving push messages
-	 * */
-	private final GcmBroadcastReceiver mHandleMessageReceiver = new GcmBroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			String newMessage = intent.getExtras().getString("lat");
-			// Waking up mobile if it is sleeping
-			Wakelocker.acquire(getApplicationContext());
-
-			/**
-			 * Take appropriate action on this message depending upon your app
-			 * requirement For now i am just displaying it on the screen
-			 * */
-			Log.i(DEBUGTAG,
-					"[MAIN ACTIVITY] We should receive data from intent :"
-							+ newMessage);
-			// Showing received message
-			// lblMessage.append(newMessage + "\n");
-			Toast.makeText(getApplicationContext(),
-					"New Message: " + newMessage, Toast.LENGTH_LONG).show();
-
-			// Releasing wake lock
-			Wakelocker.release();
-		}
-	};
 
 	@Override
 	protected void onStart() {
-
 		super.onStart();
 		// Connect the client.
 		// mLocationClient.connect();
@@ -193,11 +167,31 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	}
 
 	@Override
-	protected void onStop() {
-		super.onStop();
+	protected void onPause() {
+
+		super.onPause();
 		unregisterReceiver(receiver);
 	}
 
+	// This should get the Intent data from the Broadcast since we are registering for the service
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		checkPlayServices();
+
+		Intent i = getIntent();
+		IntentFilter filter = new IntentFilter(GcmBroadcastReceiver.ACTION_RESP);
+		filter.addCategory(Intent.CATEGORY_DEFAULT);
+		registerReceiver(receiver, filter);
+
+		if (i.hasExtra(getString(R.string.lat))) {
+			String lat = i.getExtras().getString(getString(R.string.lat));
+			Log.i(DEBUGTAG, "[MAIN ACTIVITY] OnResume: Lat: " + lat);
+		}
+	}
+
+	
 	/**
 	 * Gets the current registration ID for application on GCM service.
 	 * <p>
@@ -209,8 +203,10 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	private String getRegistrationId(Context context) {
 		final SharedPreferences prefs = getGCMPreferences(context);
 		String registrationId = prefs.getString(PROPERTY_REG_ID, "");
-		Log.i(MainActivity.DEBUGTAG, "[getRegistrationId] Registration Id: "
-				+ registrationId);
+
+		Log.i(MainActivity.DEBUGTAG,
+				"[MAINACTIVITY] [Admin Account] Registration Id: "
+						+ registrationId);
 
 		if (registrationId.isEmpty()) {
 			Log.i(DEBUGTAG,
@@ -227,6 +223,7 @@ public class MainActivity extends FragmentActivity implements TabListener,
 			Log.i(DEBUGTAG, "App version changed.");
 			return "";
 		}
+
 		return registrationId;
 	}
 
@@ -262,20 +259,6 @@ public class MainActivity extends FragmentActivity implements TabListener,
 		return true;
 	}
 
-	// You need to do the Play Services APK check here too.
-	@Override
-	protected void onResume() {
-		super.onResume();
-		checkPlayServices();
-
-		Intent i = getIntent();
-
-		if (i.hasExtra(getString(R.string.lat))) {
-			String lat = i.getExtras().getString(getString(R.string.lat));
-			Log.i(DEBUGTAG, "[MAIN ACTIVITY] OnResume: Lat: " + lat);
-		}
-	}
-
 	/**
 	 * Registers the application with GCM servers asynchronously.
 	 * <p>
@@ -285,21 +268,25 @@ public class MainActivity extends FragmentActivity implements TabListener,
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void registerInBackground() {
-		new AsyncTask() {
+		new AsyncTask<String, Void, Boolean>() {
 			@SuppressWarnings("unused")
 			protected void onPostExecute(String regId) {
 				Log.i(DEBUGTAG, "Got RegID: " + regId);
 			}
 
 			@Override
-			protected String doInBackground(Object... params) {
+			protected Boolean doInBackground(String... params) {
+
+				boolean success = false;
 				try {
 					if (gcm == null) {
 						gcm = GoogleCloudMessaging.getInstance(context);
 					}
 					regId = gcm.register(SENDER_ID);
-					Log.i(DEBUGTAG, "Device registered, registration ID="
-							+ regId);
+
+					Log.i(DEBUGTAG,
+							"[MainActivity : registerInBackground()] Device registered, registration ID="
+									+ regId);
 					// You should send the registration ID to your server over
 					// HTTP,
 					// so it can use GCM/HTTP or CCS to send messages to your
@@ -307,7 +294,7 @@ public class MainActivity extends FragmentActivity implements TabListener,
 					// The request to your server should be authenticated if
 					// your app
 					// is using accounts.
-					sendRegistrationIdToBackend();
+					sendRegistrationIdToBackend(regId);
 
 					// For this demo: we don't need to send it because the
 					// device
@@ -316,18 +303,21 @@ public class MainActivity extends FragmentActivity implements TabListener,
 					// message using the 'from' address in the message.
 
 					// Persist the regID - no need to register again.
-					storeRegistrationId(context, regId);
+					if (storeRegistrationId(context, params[0]) ? success = true
+							: success)
+						;
 				} catch (IOException ex) {
-					Log.i(MainActivity.DEBUGTAG, "Error :" + ex.getMessage());
+					Log.i(MainActivity.DEBUGTAG,
+							"[MAINACTIVITY : registerInBackground() Error :"
+									+ ex.getMessage());
 					// If there is an error, don't just keep trying to register.
 					// Require the user to click a button again, or perform
 					// exponential back-off.
 				}
-				return regId;
-
+				return success;
 			}
 
-		}.execute(null, null, null);
+		}.execute(regId, null, null);
 
 	}
 
@@ -340,25 +330,26 @@ public class MainActivity extends FragmentActivity implements TabListener,
 	 * @param regId
 	 *            registration ID
 	 */
-	private void storeRegistrationId(Context context, String regId) {
+	private boolean storeRegistrationId(Context context, String regId) {
+
 		final SharedPreferences prefs = getGCMPreferences(context);
 		int appVersion = getAppVersion(context);
 		Log.i(DEBUGTAG, "Saving regId on app version " + appVersion);
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putString(PROPERTY_REG_ID, regId);
 		editor.putInt(PROPERTY_APP_VERSION, appVersion);
-		editor.commit();
+
+		return editor.commit();
+
 	}
 
 	/**
 	 * Sends the registration ID to your server over HTTP, so it can use
-	 * GCM/HTTP or CCS to send messages to your app. Not needed for this demo
-	 * since the device sends upstream messages to a server that echoes back the
-	 * message using the 'from' address in the message.
+	 * GCM/HTTP or CCS to send messages to your app. .
 	 * 
 	 * @throws UnsupportedEncodingException
 	 */
-	private void sendRegistrationIdToBackend()
+	private void sendRegistrationIdToBackend(String regId)
 			throws UnsupportedEncodingException {
 		ServerUtilities.register(context, regId);
 	}

@@ -30,7 +30,7 @@ public class MapViewFragment extends Fragment {
 
 		this.setUpMapIfNeeded();
 		// Gets to GoogleMap from the MapView and does initialization stuff
-		// map = mapView.getMap();
+		//map = mapView.getMap();
 		// map.getUiSettings().setMyLocationButtonEnabled(false);
 		// map.setMyLocationEnabled(true);
 		LocationResult locationResult = new LocationResult() {
@@ -120,14 +120,4 @@ public class MapViewFragment extends Fragment {
 		super.onDestroyView();
 	}
 
-	/*
-	 * @Override public void onResume() { mapView.onResume(); super.onResume();
-	 * }
-	 * 
-	 * @Override public void onDestroy() { super.onDestroy();
-	 * mapView.onDestroy(); }
-	 * 
-	 * @Override public void onLowMemory() { super.onLowMemory();
-	 * mapView.onLowMemory(); }
-	 */
 }
